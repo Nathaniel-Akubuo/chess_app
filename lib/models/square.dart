@@ -1,7 +1,7 @@
 class Square {
   final int index;
 
-  const Square(this.index) : assert(index >= 0 && index < 64);
+  const Square(this.index);
 
   static Square fromFileRank(int file, int rank) {
     return Square(rank * 8 + file);
