@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:chess_app/ui/common/app_colors.dart';
 import 'package:flutter/material.dart';
 
 const double _tinySize = 5.0;
@@ -48,14 +49,11 @@ double screenWidthFraction(
 }) =>
     min((screenWidth(context) - offsetBy) / dividedBy, max);
 
-double halfScreenWidth(BuildContext context) =>
-    screenWidthFraction(context, dividedBy: 2);
+double halfScreenWidth(BuildContext context) => screenWidthFraction(context, dividedBy: 2);
 
-double thirdScreenWidth(BuildContext context) =>
-    screenWidthFraction(context, dividedBy: 3);
+double thirdScreenWidth(BuildContext context) => screenWidthFraction(context, dividedBy: 3);
 
-double quarterScreenWidth(BuildContext context) =>
-    screenWidthFraction(context, dividedBy: 4);
+double quarterScreenWidth(BuildContext context) => screenWidthFraction(context, dividedBy: 4);
 
 double getResponsiveHorizontalSpaceMedium(BuildContext context) =>
     screenWidthFraction(context, dividedBy: 10);
@@ -87,4 +85,51 @@ double getResponsiveFontSize(
   );
 
   return responsiveSize;
+}
+
+class Inter extends TextStyle {
+  const Inter.w300(double fontSize, {Color? color})
+      : super(
+          fontFamily: 'Inter',
+          color: color ?? kTextColor,
+          fontWeight: FontWeight.w300,
+          fontSize: fontSize,
+          letterSpacing: -0.64,
+        );
+
+  const Inter.w400(double fontSize, {Color? color})
+      : super(
+          fontFamily: 'Inter',
+          color: color ?? kTextColor,
+          fontWeight: FontWeight.w400,
+          fontSize: fontSize,
+          letterSpacing: -0.64,
+        );
+
+  const Inter.w500(double fontSize, {Color? color})
+      : super(
+          fontFamily: 'Inter',
+          color: color ?? kTextColor,
+          fontWeight: FontWeight.w500,
+          fontSize: fontSize,
+          letterSpacing: -0.64,
+        );
+
+  const Inter.w600(double fontSize, {Color? color})
+      : super(
+          fontFamily: 'Inter',
+          color: color ?? kTextColor,
+          fontWeight: FontWeight.w600,
+          fontSize: fontSize,
+          letterSpacing: -0.64,
+        );
+
+  const Inter.w700(double fontSize, {Color? color})
+      : super(
+          fontFamily: 'Inter',
+          color: color ?? kTextColor,
+          fontWeight: FontWeight.w700,
+          fontSize: fontSize,
+          letterSpacing: -0.64,
+        );
 }
