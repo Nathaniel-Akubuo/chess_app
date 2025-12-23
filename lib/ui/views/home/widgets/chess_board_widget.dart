@@ -9,7 +9,7 @@ class ChessBoard extends StatelessWidget {
   final Position position;
   final double size;
   final Piece? selectedPiece;
-  final Function(Square? square) onTapSquare;
+  final Function(Square square) onTapSquare;
 
   const ChessBoard({
     super.key,
