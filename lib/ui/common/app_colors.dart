@@ -9,6 +9,18 @@ const Color kcVeryLightGrey = Color(0xFFE3E3E3);
 const Color kcBackgroundColor = kcDarkGreyColor;
 
 const Color kTextColor = kFDFDFD;
+const Color kPrimaryColor = k1C1A19;
+const Color kPrimaryGreen = k719552;
+
+final kShimmerBaseColor = Colors.grey[400]!;
+final kShimmerHighlightColor = Colors.grey[100]!;
 
 const Color k343230 = Color(0xFF343230);
 const Color kFDFDFD = Color(0xFFFDFDFD);
+const Color k777573 = Color(0xFF777573);
+const Color k1C1A19 = Color(0xFF1C1A19);
+const Color k719552 = Color(0xFF719552);
+const Color k0D47A1 = Color(0xFF0D47A1);
+const Color k2E7D32 = Color(0xFF2E7D32);
+const Color k4FC3F7 = Color(0xFF4FC3F7);
+const Color kFBC02D = Color(0xFFFBC02D);

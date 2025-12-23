@@ -20,6 +20,27 @@ const Widget verticalSpaceMedium = SizedBox(height: _mediumSize);
 const Widget verticalSpaceLarge = SizedBox(height: _largeSize);
 const Widget verticalSpaceMassive = SizedBox(height: _massiveSize);
 
+const k120pxBorderRadius = BorderRadius.all(Radius.circular(120));
+const k100pxBorderRadius = BorderRadius.all(Radius.circular(100));
+const k64pxBorderRadius = BorderRadius.all(Radius.circular(64));
+const k40pxBorderRadius = BorderRadius.all(Radius.circular(40));
+const k32pxBorderRadius = BorderRadius.all(Radius.circular(32));
+const k24pxBorderRadius = BorderRadius.all(Radius.circular(24));
+const k20pxBorderRadius = BorderRadius.all(Radius.circular(20));
+const k16pxBorderRadius = BorderRadius.all(Radius.circular(16));
+const k12pxBorderRadius = BorderRadius.all(Radius.circular(12));
+const k10pxBorderRadius = BorderRadius.all(Radius.circular(10));
+const k8pxBorderRadius = BorderRadius.all(Radius.circular(8));
+const k6pxBorderRadius = BorderRadius.all(Radius.circular(6));
+const k4pxBorderRadius = BorderRadius.all(Radius.circular(4));
+
+const k24pxSheetRadius = BorderRadius.vertical(top: Radius.circular(24));
+
+const kMainPadding = EdgeInsets.symmetric(horizontal: 16);
+const kMainPaddingDesktop = EdgeInsets.symmetric(horizontal: 24);
+
+final k1pxBorder = Border.all(color: k777573, width: 1);
+
 Widget spacedDivider = const Column(
   children: <Widget>[
     verticalSpaceMedium,
