@@ -2,7 +2,7 @@ import 'package:chess_app/models/models.dart';
 
 class Move {
   final Square from;
-  final Square to;
+  final Square destination;
   final Piece piece;
 
   final PieceType? promoteTo;
@@ -14,7 +14,7 @@ class Move {
 
   const Move({
     required this.from,
-    required this.to,
+    required this.destination,
     required this.piece,
     this.capturedPiece,
     this.promoteTo,

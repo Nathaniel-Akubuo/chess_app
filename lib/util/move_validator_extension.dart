@@ -1,31 +1,192 @@
 import 'package:chess_app/models/models.dart';
+import 'package:chess_app/util/global_functions.dart';
 
 extension MoveValidatorExtension on Position {
+  List<Square> validSquaresForPiece(Piece piece) {
+    assert(piece.square != null, 'Piece must have a valid square');
+    return allSquaresForPiece(piece)
+        .where(
+          (toSquare) => validateMove(
+            Move(
+              from: piece.square!,
+              destination: toSquare,
+              piece: piece,
+            ),
+          ),
+        )
+        .toList();
+  }
+
+  List<Square> allSquaresForPiece(Piece piece) {
+    final squares = <Square>[];
+
+    final from = piece.square!;
+    final directions = <List<int>>[];
+
+    switch (piece.type) {
+      case PieceType.pawn:
+        final dir = piece.color == PieceColor.white ? 1 : -1;
+        final startRank = piece.color == PieceColor.white ? 1 : 6;
+
+        // Forward moves
+        final oneForward = Square.fromFileRank(from.file, from.rank + dir);
+        if (pieceAt(oneForward) == null) squares.add(oneForward);
+
+        final twoForward = Square.fromFileRank(from.file, from.rank + 2 * dir);
+        if (from.rank == startRank && pieceAt(oneForward) == null && pieceAt(twoForward) == null) {
+          squares.add(twoForward);
+        }
+
+        // Captures
+        for (final df in [-1, 1]) {
+          final targetFile = from.file + df;
+          if (targetFile < 0 || targetFile > 7) continue;
+          final targetSquare = Square.fromFileRank(from.file + df, from.rank + dir);
+          final targetPiece = pieceAt(targetSquare);
+
+          if (targetPiece != null && targetPiece.color != piece.color) {
+            squares.add(targetSquare);
+          }
+          // En passant
+          if (targetSquare == enPassantSquare) {
+            squares.add(targetSquare);
+          }
+        }
+        break;
+
+      case PieceType.knight:
+        final jumps = [
+          [1, 2],
+          [2, 1],
+          [-1, 2],
+          [-2, 1],
+          [1, -2],
+          [2, -1],
+          [-1, -2],
+          [-2, -1]
+        ];
+        for (final jump in jumps) {
+          final x = from.file + jump[0];
+          final y = from.rank + jump[1];
+          if (x < 0 || x > 7 || y < 0 || y > 7) continue;
+
+          final target = Square.fromFileRank(x, y);
+          final targetPiece = pieceAt(target);
+          if (targetPiece == null || targetPiece.color != piece.color) {
+            squares.add(target);
+          }
+        }
+        break;
+
+      case PieceType.bishop:
+        directions.addAll([
+          [1, 1],
+          [1, -1],
+          [-1, 1],
+          [-1, -1]
+        ]);
+        squares.addAll(_slidingSquares(piece, directions));
+        break;
+
+      case PieceType.rook:
+        directions.addAll([
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1]
+        ]);
+        squares.addAll(_slidingSquares(piece, directions));
+        break;
+
+      case PieceType.queen:
+        directions.addAll([
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+          [1, 1],
+          [1, -1],
+          [-1, 1],
+          [-1, -1],
+        ]);
+        squares.addAll(_slidingSquares(piece, directions));
+        break;
+
+      case PieceType.king:
+        for (final dx in [-1, 0, 1]) {
+          for (final dy in [-1, 0, 1]) {
+            if (dx == 0 && dy == 0) continue;
+            final x = from.file + dx;
+            final y = from.rank + dy;
+            if (x < 0 || x > 7 || y < 0 || y > 7) continue;
+
+            final target = Square.fromFileRank(x, y);
+            final targetPiece = pieceAt(target);
+            if (targetPiece == null || targetPiece.color != piece.color) {
+              squares.add(target);
+            }
+          }
+        }
+
+        // Castling squares
+        for (final df in [-2, 2]) {
+          final to = Square.fromFileRank(from.file + df, from.rank);
+          if (_validateCastling(piece, from, to)) {
+            squares.add(to);
+          }
+        }
+        break;
+    }
+
+    return squares;
+  }
+
+  List<Square> _slidingSquares(Piece piece, List<List<int>> directions) {
+    final squares = <Square>[];
+    final from = piece.square!;
+    for (final dir in directions) {
+      var x = from.file;
+      var y = from.rank;
+      while (true) {
+        x += dir[0];
+        y += dir[1];
+        if (x < 0 || x > 7 || y < 0 || y > 7) break;
+
+        final target = Square.fromFileRank(x, y);
+        final targetPiece = pieceAt(target);
+        if (targetPiece == null) {
+          squares.add(target);
+        } else {
+          if (targetPiece.color != piece.color) {
+            squares.add(target);
+          }
+          break;
+        }
+      }
+    }
+    return squares;
+  }
+
   Position update(Move move) {
     assert(validateMove(move));
+    var piece = move.piece;
 
     final nextPieces = List<Piece>.from(pieces);
 
-    final index = nextPieces.indexWhere((p) => p.square == move.from);
-    final movingPiece = nextPieces[index];
+    nextPieces.removeWhere((p) => p.square == move.destination);
 
-    nextPieces.removeWhere((p) => p.square == move.to);
+    final movingPiece = move.piece.copyWith(type: move.promoteTo, square: move.destination);
 
-    final moved = Piece(
-      type: move.promoteTo ?? movingPiece.type,
-      color: movingPiece.color,
-      square: move.to,
-      initialSquare: move.promoteTo != null ? move.to : movingPiece.initialSquare,
-    );
-
-    nextPieces[index] = moved;
+    final index = nextPieces.indexWhere((p) => p.initialSquare == piece.initialSquare);
+    nextPieces[index] = movingPiece;
 
     return Position(
       pieces: nextPieces,
       sideToMove: _opposite(sideToMove),
-      enPassantSquare: _computeEnPassant(movingPiece, move.from, move.to),
-      halfMoveCount:
-          movingPiece.type == PieceType.pawn || pieceAt(move.to) != null ? 0 : halfMoveCount + 1,
+      enPassantSquare: _computeEnPassant(movingPiece, move.from, move.destination),
+      halfMoveCount: movingPiece.type == PieceType.pawn || pieceAt(move.destination) != null
+          ? 0
+          : halfMoveCount + 1,
       fullMoveNumber: sideToMove == PieceColor.black ? fullMoveNumber + 1 : fullMoveNumber,
       whiteCanCastleKingSide: _updateCastleRight(whiteCanCastleKingSide, movingPiece),
       whiteCanCastleQueenSide: _updateCastleRight(whiteCanCastleQueenSide, movingPiece),
@@ -61,16 +222,14 @@ extension MoveValidatorExtension on Position {
   }
 
   bool isInCheck(PieceColor color) {
-    final king = pieces.firstWhere(
-      (p) => p.type == PieceType.king && p.color == color,
-    );
+    final king = pieces.firstWhere((p) => p.type == PieceType.king && p.color == color);
 
     final kingSquare = king.square!;
 
     for (final piece in pieces) {
       if (piece.color == color) continue;
 
-      final move = Move(from: piece.square!, to: kingSquare, piece: piece);
+      final move = Move(from: piece.square!, destination: kingSquare, piece: piece);
       if (_validatePieceMove(piece, move, king)) {
         return true;
       }
@@ -85,7 +244,7 @@ extension MoveValidatorExtension on Position {
 
     if (piece.color != sideToMove) return false;
 
-    final target = pieceAt(move.to);
+    final target = pieceAt(move.destination);
     if (target != null && target.color == piece.color) {
       return false;
     }
@@ -94,9 +253,9 @@ extension MoveValidatorExtension on Position {
       return false;
     }
 
-    // Simulate move and check king safety
     final simulated = _simulateMove(move);
     if (simulated.isInCheck(piece.color)) {
+      logfn('here');
       return false;
     }
 
@@ -104,21 +263,16 @@ extension MoveValidatorExtension on Position {
   }
 
   Position _simulateMove(Move move) {
+    var piece = move.piece;
+
     final nextPieces = List<Piece>.from(pieces);
 
-    final index = nextPieces.indexWhere((p) => p.square == move.from);
-    final moving = nextPieces[index];
+    nextPieces.removeWhere((p) => p.square == move.destination);
 
-    nextPieces.removeWhere((p) => p.square == move.to);
+    final movingPiece = move.piece.copyWith(type: move.promoteTo, square: move.destination);
 
-    final moved = Piece(
-      type: move.promoteTo ?? moving.type,
-      color: moving.color,
-      square: move.to,
-      initialSquare: move.promoteTo != null ? move.to : moving.initialSquare,
-    );
-
-    nextPieces[index] = moved;
+    final index = nextPieces.indexWhere((p) => p.initialSquare == piece.initialSquare);
+    nextPieces[index] = movingPiece;
 
     return Position(
       pieces: nextPieces,
@@ -139,7 +293,7 @@ extension MoveValidatorExtension on Position {
     Piece? target,
   ) {
     final from = move.from;
-    final to = move.to;
+    final to = move.destination;
 
     final deltaFile = to.file - from.file;
     final deltaRank = to.rank - from.rank;
@@ -219,14 +373,14 @@ extension MoveValidatorExtension on Position {
     Square from,
     Square to,
   ) {
-    final df = to.file - from.file;
-    final dr = (to.rank - from.rank).abs();
+    final deltaFile = to.file - from.file;
+    final deltaRank = (to.rank - from.rank).abs();
 
     // Normal king move
-    if (df.abs() <= 1 && dr <= 1) return true;
+    if (deltaFile.abs() <= 1 && deltaRank <= 1) return true;
 
     // Castling
-    if (dr == 0 && df.abs() == 2) {
+    if (deltaRank == 0 && deltaFile.abs() == 2) {
       return _validateCastling(piece, from, to);
     }
 
@@ -272,7 +426,7 @@ extension MoveValidatorExtension on Position {
         from.rank,
       );
 
-      final simulated = _simulateMove(Move(from: from, to: intermediate, piece: king));
+      final simulated = _simulateMove(Move(from: from, destination: intermediate, piece: king));
 
       if (simulated.isInCheck(king.color)) {
         return false;

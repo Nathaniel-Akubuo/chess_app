@@ -5,9 +5,9 @@ enum PieceType { pawn, knight, bishop, rook, queen, king }
 enum PieceColor { white, black }
 
 class Piece {
+  final Square initialSquare;
   PieceType type;
   PieceColor color;
-  Square initialSquare;
   Square? square;
 
   Piece({
@@ -43,5 +43,18 @@ class Piece {
   @override
   int get hashCode {
     return initialSquare.hashCode;
+  }
+
+  Piece copyWith({
+    PieceType? type,
+    PieceColor? color,
+    Square? square,
+  }) {
+    return Piece(
+      type: type ?? this.type,
+      color: color ?? this.color,
+      initialSquare: initialSquare,
+      square: square ?? this.square,
+    );
   }
 }

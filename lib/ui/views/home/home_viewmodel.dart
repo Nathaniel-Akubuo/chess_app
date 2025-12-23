@@ -1,36 +1,40 @@
-import 'package:chess_app/app/app.bottomsheets.dart';
-import 'package:chess_app/app/app.dialogs.dart';
-import 'package:chess_app/app/app.locator.dart';
-import 'package:chess_app/ui/common/app_strings.dart';
+import 'package:chess_app/models/models.dart';
+import 'package:chess_app/util/move_validator_extension.dart';
 import 'package:stacked/stacked.dart';
-import 'package:stacked_services/stacked_services.dart';
 
 class HomeViewModel extends BaseViewModel {
-  final _dialogService = locator<DialogService>();
-  final _bottomSheetService = locator<BottomSheetService>();
+  late Game _currentGame;
 
-  String get counterLabel => 'Counter is: $_counter';
+  HomeViewModel() : _currentGame = Game.newGame();
 
-  int _counter = 0;
+  Square? selectedSquare;
 
-  void incrementCounter() {
-    _counter++;
-    rebuildUi();
+  Position get position => _currentGame.currentPosition;
+
+  Piece? get highlightedPiece => selectedSquare == null ? null : position.pieceAt(selectedSquare!);
+
+  void selectSquare(Square square) {
+    var isHighlighted = highlightedPiece != null;
+
+    if (isHighlighted) {
+      var isValidMoveForPiece = validMovesForSelectedPiece.contains(square);
+      if (isValidMoveForPiece) _updatePositon(highlightedPiece!, square);
+      selectedSquare = null;
+      notifyListeners();
+    } else {
+      selectedSquare = square;
+      notifyListeners();
+    }
   }
 
-  void showDialog() {
-    _dialogService.showCustomDialog(
-      variant: DialogType.infoAlert,
-      title: 'Stacked Rocks!',
-      description: 'Give stacked $_counter stars on Github',
-    );
-  }
+  List<Square> get validMovesForSelectedPiece =>
+      highlightedPiece == null ? [] : position.validSquaresForPiece(highlightedPiece!);
 
-  void showBottomSheet() {
-    _bottomSheetService.showCustomSheet(
-      variant: BottomSheetType.notice,
-      title: ksHomeBottomSheetTitle,
-      description: ksHomeBottomSheetDescription,
-    );
+  void _updatePositon(Piece piece, Square newSquare) {
+    if (piece.square == null) return;
+    var move = Move(from: piece.square!, destination: newSquare, piece: piece);
+
+    _currentGame = _currentGame.makeMove(move);
+    notifyListeners();
   }
 }

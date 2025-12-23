@@ -9,7 +9,9 @@ class ChessBoard extends StatelessWidget {
   final Position position;
   final double size;
   final Piece? selectedPiece;
+
   final Function(Square square) onTapSquare;
+  final List<Square> highlightedSquares;
 
   const ChessBoard({
     super.key,
@@ -17,6 +19,7 @@ class ChessBoard extends StatelessWidget {
     required this.size,
     this.selectedPiece,
     required this.onTapSquare,
+    this.highlightedSquares = const [],
   });
 
   @override
@@ -31,6 +34,7 @@ class ChessBoard extends StatelessWidget {
           _BoardGrid(
             squareSize: squareSize,
             onTapSquare: (index) => onTapSquare(Square(index)),
+            isHighlighted: (square) => highlightedSquares.contains(square),
           ),
           ..._pieces,
         ],
@@ -89,10 +93,12 @@ class ChessBoard extends StatelessWidget {
 class _BoardGrid extends StatelessWidget {
   final double squareSize;
   final Function(int index) onTapSquare;
+  final bool Function(Square square) isHighlighted;
 
   const _BoardGrid({
     required this.squareSize,
     required this.onTapSquare,
+    required this.isHighlighted,
   });
 
   @override
@@ -102,15 +108,30 @@ class _BoardGrid extends StatelessWidget {
         var rank = 7 - _;
         return Row(
           children: List.generate(8, (file) {
+            final square = Square.fromFileRank(file, rank);
             var index = rank * 8 + file;
 
             final isLight = (rank + file) % 2 == 0;
+            var highlighted = isHighlighted(square);
+            var squareColorValue = isLight ? const Color(0xFFEEEED2) : const Color(0xFF769656);
             return GestureDetector(
               onTap: () => onTapSquare(index),
               child: Container(
                 width: squareSize,
                 height: squareSize,
-                color: isLight ? const Color(0xFFEEEED2) : const Color(0xFF769656),
+                color: squareColorValue,
+                child: highlighted
+                    ? Center(
+                        child: Container(
+                          height: 16,
+                          width: 16,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      )
+                    : null,
               ),
             );
           }),
