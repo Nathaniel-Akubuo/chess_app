@@ -1,3 +1,4 @@
+import 'package:chess_app/ui/common/app_colors.dart';
 import 'package:chess_app/ui/common/app_values.dart';
 import 'package:chess_app/ui/widgets/images/image_card.dart';
 import 'package:chess_app/util/extensions.dart';
@@ -113,7 +114,7 @@ class _BoardGrid extends StatelessWidget {
 
             final isLight = (rank + file) % 2 == 0;
             var highlighted = isHighlighted(square);
-            var squareColorValue = isLight ? const Color(0xFFEEEED2) : const Color(0xFF769656);
+            var squareColorValue = isLight ? kEDECD3 : kEFA24B;
             return GestureDetector(
               onTap: () => onTapSquare(index),
               child: Container(
@@ -126,7 +127,7 @@ class _BoardGrid extends StatelessWidget {
                           height: 16,
                           width: 16,
                           decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.1),
+                            color: Colors.black.withValues(alpha: 0.15),
                             shape: BoxShape.circle,
                           ),
                         ),
