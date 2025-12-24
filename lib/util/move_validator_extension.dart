@@ -172,27 +172,68 @@ extension MoveValidatorExtension on Position {
     var piece = move.piece;
 
     final nextPieces = List<Piece>.from(pieces);
+    final isCastle = move.isCastlingMove();
 
-    nextPieces.removeWhere((p) => p.square == move.destination);
+    if (isCastle) {
+      var from = move.from;
 
-    final movingPiece = move.piece.copyWith(type: move.promoteTo, square: move.destination);
+      final isKingSide = move.destination.file > from.file;
 
-    final index = nextPieces.indexWhere((p) => p.initialSquare == piece.initialSquare);
-    nextPieces[index] = movingPiece;
+      final rookFrom = Square.fromFileRank(
+        isKingSide ? 7 : 0,
+        from.rank,
+      );
 
-    return Position(
-      pieces: nextPieces,
-      sideToMove: _opposite(sideToMove),
-      enPassantSquare: _computeEnPassant(movingPiece, move.from, move.destination),
-      halfMoveCount: movingPiece.type == PieceType.pawn || pieceAt(move.destination) != null
-          ? 0
-          : halfMoveCount + 1,
-      fullMoveNumber: sideToMove == PieceColor.black ? fullMoveNumber + 1 : fullMoveNumber,
-      whiteCanCastleKingSide: _updateCastleRight(whiteCanCastleKingSide, movingPiece),
-      whiteCanCastleQueenSide: _updateCastleRight(whiteCanCastleQueenSide, movingPiece),
-      blackCanCastleKingSide: _updateCastleRight(blackCanCastleKingSide, movingPiece),
-      blackCanCastleQueenSide: _updateCastleRight(blackCanCastleQueenSide, movingPiece),
-    );
+      final rookTo = Square.fromFileRank(
+        isKingSide ? 5 : 3,
+        from.rank,
+      );
+
+      var rook = pieceAt(rookFrom)?.copyWith(square: rookTo);
+      var king = move.piece.copyWith(square: move.destination);
+      final rookIndex = nextPieces.indexWhere((e) => e.square == rookFrom);
+      final kingIndex = nextPieces.indexWhere((e) => e.square == move.from);
+      final isBlack = king.color == PieceColor.black;
+      nextPieces[rookIndex] = rook!;
+      nextPieces[kingIndex] = king;
+
+      return Position(
+        pieces: nextPieces,
+        sideToMove: _opposite(sideToMove),
+        enPassantSquare: _computeEnPassant(king, move.from, move.destination),
+        halfMoveCount: king.type == PieceType.pawn || pieceAt(move.destination) != null
+            ? 0
+            : halfMoveCount + 1,
+        fullMoveNumber: sideToMove == PieceColor.black ? fullMoveNumber + 1 : fullMoveNumber,
+        whiteCanCastleKingSide: isBlack ? _updateCastleRight(whiteCanCastleKingSide, king) : false,
+        whiteCanCastleQueenSide:
+            isBlack ? _updateCastleRight(whiteCanCastleQueenSide, king) : false,
+        blackCanCastleKingSide: isBlack ? false : _updateCastleRight(blackCanCastleKingSide, king),
+        blackCanCastleQueenSide:
+            isBlack ? false : _updateCastleRight(blackCanCastleQueenSide, king),
+      );
+    } else {
+      nextPieces.removeWhere((p) => p.square == move.destination);
+
+      final movingPiece = move.piece.copyWith(type: move.promoteTo, square: move.destination);
+
+      final index = nextPieces.indexWhere((p) => p.initialSquare == piece.initialSquare);
+      nextPieces[index] = movingPiece;
+
+      return Position(
+        pieces: nextPieces,
+        sideToMove: _opposite(sideToMove),
+        enPassantSquare: _computeEnPassant(movingPiece, move.from, move.destination),
+        halfMoveCount: movingPiece.type == PieceType.pawn || pieceAt(move.destination) != null
+            ? 0
+            : halfMoveCount + 1,
+        fullMoveNumber: sideToMove == PieceColor.black ? fullMoveNumber + 1 : fullMoveNumber,
+        whiteCanCastleKingSide: _updateCastleRight(whiteCanCastleKingSide, movingPiece),
+        whiteCanCastleQueenSide: _updateCastleRight(whiteCanCastleQueenSide, movingPiece),
+        blackCanCastleKingSide: _updateCastleRight(blackCanCastleKingSide, movingPiece),
+        blackCanCastleQueenSide: _updateCastleRight(blackCanCastleQueenSide, movingPiece),
+      );
+    }
   }
 
   PieceColor _opposite(PieceColor c) => c == PieceColor.white ? PieceColor.black : PieceColor.white;
@@ -239,7 +280,9 @@ extension MoveValidatorExtension on Position {
   }
 
   bool validateMove(Move move) {
+    logfn(move.isCastlingMove());
     final piece = pieceAt(move.from);
+
     if (piece == null) return false;
 
     if (piece.color != sideToMove) return false;
@@ -255,7 +298,6 @@ extension MoveValidatorExtension on Position {
 
     final simulated = _simulateMove(move);
     if (simulated.isInCheck(piece.color)) {
-      logfn('here');
       return false;
     }
 

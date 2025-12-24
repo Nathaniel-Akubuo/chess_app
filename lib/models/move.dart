@@ -9,16 +9,17 @@ class Move {
 
   final Piece? capturedPiece;
 
-  final bool isCastle;
-  final bool isEnPassant;
-
   const Move({
     required this.from,
     required this.destination,
     required this.piece,
     this.capturedPiece,
     this.promoteTo,
-    this.isCastle = false,
-    this.isEnPassant = false,
   });
+
+  bool isCastlingMove() {
+    if (piece.type != PieceType.king) return false;
+    if (from.rank != destination.rank) return false;
+    return (from.file - destination.file).abs() == 2;
+  }
 }
