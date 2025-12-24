@@ -1,5 +1,4 @@
 import 'package:chess_app/models/models.dart';
-import 'package:chess_app/util/global_functions.dart';
 
 extension MoveValidatorExtension on Position {
   List<Square> validSquaresForPiece(Piece piece) {
@@ -192,10 +191,10 @@ extension MoveValidatorExtension on Position {
             ? 0
             : halfMoveCount + 1,
         fullMoveNumber: sideToMove == PieceColor.black ? fullMoveNumber + 1 : fullMoveNumber,
-        whiteCanCastleKingSide: _updateCastlingRights(whiteCanCastleKingSide, movingPiece),
-        whiteCanCastleQueenSide: _updateCastlingRights(whiteCanCastleQueenSide, movingPiece),
-        blackCanCastleKingSide: _updateCastlingRights(blackCanCastleKingSide, movingPiece),
-        blackCanCastleQueenSide: _updateCastlingRights(blackCanCastleQueenSide, movingPiece),
+        whiteCanCastleKingSide: whiteCanCastleKingSide,
+        whiteCanCastleQueenSide: whiteCanCastleQueenSide,
+        blackCanCastleKingSide: blackCanCastleKingSide,
+        blackCanCastleQueenSide: blackCanCastleQueenSide,
       );
     } else if (isCastle) {
       var from = move.from;
@@ -240,7 +239,7 @@ extension MoveValidatorExtension on Position {
 
       final index = nextPieces.indexWhere((p) => p.initialSquare == piece.initialSquare);
       nextPieces[index] = movingPiece;
-
+      final isBlack = piece.color == PieceColor.black;
       return Position(
         pieces: nextPieces,
         sideToMove: _opposite(sideToMove),
@@ -249,23 +248,50 @@ extension MoveValidatorExtension on Position {
             ? 0
             : halfMoveCount + 1,
         fullMoveNumber: sideToMove == PieceColor.black ? fullMoveNumber + 1 : fullMoveNumber,
-        whiteCanCastleKingSide: _updateCastlingRights(whiteCanCastleKingSide, movingPiece),
-        whiteCanCastleQueenSide: _updateCastlingRights(whiteCanCastleQueenSide, movingPiece),
-        blackCanCastleKingSide: _updateCastlingRights(blackCanCastleKingSide, movingPiece),
-        blackCanCastleQueenSide: _updateCastlingRights(blackCanCastleQueenSide, movingPiece),
+        whiteCanCastleKingSide: isBlack
+            ? whiteCanCastleKingSide
+            : _updateKingSideCastlingRight(whiteCanCastleKingSide, movingPiece),
+        whiteCanCastleQueenSide: isBlack
+            ? whiteCanCastleQueenSide
+            : _updateQueenSideCastlingRight(whiteCanCastleQueenSide, movingPiece),
+        blackCanCastleKingSide: isBlack
+            ? _updateKingSideCastlingRight(blackCanCastleKingSide, movingPiece)
+            : blackCanCastleKingSide,
+        blackCanCastleQueenSide: isBlack
+            ? _updateQueenSideCastlingRight(blackCanCastleQueenSide, movingPiece)
+            : blackCanCastleQueenSide,
       );
     }
   }
 
   PieceColor _opposite(PieceColor c) => c == PieceColor.white ? PieceColor.black : PieceColor.white;
 
-  bool _updateCastlingRights(bool current, Piece piece) {
-    if (!current) return false;
-    if (piece.type != PieceType.king && piece.type != PieceType.rook) {
-      return current;
+  bool _updateKingSideCastlingRight(bool current, Piece piece) {
+    if (current == false) return false;
+
+    if (piece.type == PieceType.king) {
+      return false;
     }
-    if (piece.initialSquare != piece.square) return false;
-    return current;
+
+    if (piece.type == PieceType.rook && piece.initialSquare.file == 7) {
+      return piece.initialSquare.file == piece.square?.file;
+    }
+
+    return true;
+  }
+
+  bool _updateQueenSideCastlingRight(bool current, Piece piece) {
+    if (current == false) return false;
+
+    if (piece.type == PieceType.king) {
+      return false;
+    }
+
+    if (piece.type == PieceType.rook && piece.initialSquare.file == 0) {
+      return piece.initialSquare.file == piece.square?.file;
+    }
+
+    return true;
   }
 
   Square? _computeEnPassant(
@@ -273,7 +299,9 @@ extension MoveValidatorExtension on Position {
     Square from,
     Square to,
   ) {
-    if (piece.type != PieceType.pawn) return null;
+    if (piece.type != PieceType.pawn) {
+      return enPassantSquare;
+    }
     if ((from.rank - to.rank).abs() == 2) {
       return Square.fromFileRank(
         from.file,
@@ -301,7 +329,6 @@ extension MoveValidatorExtension on Position {
   }
 
   bool validateMove(Move move) {
-    logfn(move.isCastlingMove());
     final piece = pieceAt(move.from);
 
     if (piece == null) return false;
