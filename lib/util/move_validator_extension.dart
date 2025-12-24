@@ -173,8 +173,31 @@ extension MoveValidatorExtension on Position {
 
     final nextPieces = List<Piece>.from(pieces);
     final isCastle = move.isCastlingMove();
+    if (move.isEnPassantMove(enPassantSquare)) {
+      var dir = piece.color == PieceColor.white ? -1 : 1;
+      var destination = move.destination;
+      var captureSquare = Square.fromFileRank(destination.file, destination.rank + dir);
 
-    if (isCastle) {
+      final index = nextPieces.indexWhere((e) => e.initialSquare == piece.initialSquare);
+      final movingPiece = move.piece.copyWith(type: move.promoteTo, square: move.destination);
+
+      nextPieces.removeWhere((e) => e.square == captureSquare);
+      nextPieces[index] = movingPiece;
+
+      return Position(
+        pieces: nextPieces,
+        sideToMove: _opposite(sideToMove),
+        enPassantSquare: _computeEnPassant(piece, move.from, destination),
+        halfMoveCount: movingPiece.type == PieceType.pawn || pieceAt(move.destination) != null
+            ? 0
+            : halfMoveCount + 1,
+        fullMoveNumber: sideToMove == PieceColor.black ? fullMoveNumber + 1 : fullMoveNumber,
+        whiteCanCastleKingSide: _updateCastleRight(whiteCanCastleKingSide, movingPiece),
+        whiteCanCastleQueenSide: _updateCastleRight(whiteCanCastleQueenSide, movingPiece),
+        blackCanCastleKingSide: _updateCastleRight(blackCanCastleKingSide, movingPiece),
+        blackCanCastleQueenSide: _updateCastleRight(blackCanCastleQueenSide, movingPiece),
+      );
+    } else if (isCastle) {
       var from = move.from;
 
       final isKingSide = move.destination.file > from.file;

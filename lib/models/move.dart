@@ -22,4 +22,14 @@ class Move {
     if (from.rank != destination.rank) return false;
     return (from.file - destination.file).abs() == 2;
   }
+
+  bool isEnPassantMove(Square? enPassantSquare) {
+    if (piece.type != PieceType.pawn) return false;
+    if (enPassantSquare == null) return false;
+
+    final isDiagonal =
+        (from.file - destination.file).abs() == 1 && (from.rank - destination.rank).abs() == 1;
+
+    return isDiagonal && destination == enPassantSquare;
+  }
 }
