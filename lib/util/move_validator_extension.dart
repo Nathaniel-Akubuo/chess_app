@@ -192,10 +192,10 @@ extension MoveValidatorExtension on Position {
             ? 0
             : halfMoveCount + 1,
         fullMoveNumber: sideToMove == PieceColor.black ? fullMoveNumber + 1 : fullMoveNumber,
-        whiteCanCastleKingSide: _updateCastleRight(whiteCanCastleKingSide, movingPiece),
-        whiteCanCastleQueenSide: _updateCastleRight(whiteCanCastleQueenSide, movingPiece),
-        blackCanCastleKingSide: _updateCastleRight(blackCanCastleKingSide, movingPiece),
-        blackCanCastleQueenSide: _updateCastleRight(blackCanCastleQueenSide, movingPiece),
+        whiteCanCastleKingSide: _updateCastlingRights(whiteCanCastleKingSide, movingPiece),
+        whiteCanCastleQueenSide: _updateCastlingRights(whiteCanCastleQueenSide, movingPiece),
+        blackCanCastleKingSide: _updateCastlingRights(blackCanCastleKingSide, movingPiece),
+        blackCanCastleQueenSide: _updateCastlingRights(blackCanCastleQueenSide, movingPiece),
       );
     } else if (isCastle) {
       var from = move.from;
@@ -228,12 +228,10 @@ extension MoveValidatorExtension on Position {
             ? 0
             : halfMoveCount + 1,
         fullMoveNumber: sideToMove == PieceColor.black ? fullMoveNumber + 1 : fullMoveNumber,
-        whiteCanCastleKingSide: isBlack ? _updateCastleRight(whiteCanCastleKingSide, king) : false,
-        whiteCanCastleQueenSide:
-            isBlack ? _updateCastleRight(whiteCanCastleQueenSide, king) : false,
-        blackCanCastleKingSide: isBlack ? false : _updateCastleRight(blackCanCastleKingSide, king),
-        blackCanCastleQueenSide:
-            isBlack ? false : _updateCastleRight(blackCanCastleQueenSide, king),
+        whiteCanCastleKingSide: isBlack ? whiteCanCastleKingSide : false,
+        whiteCanCastleQueenSide: isBlack ? whiteCanCastleQueenSide : false,
+        blackCanCastleKingSide: isBlack ? false : blackCanCastleKingSide,
+        blackCanCastleQueenSide: isBlack ? false : blackCanCastleQueenSide,
       );
     } else {
       nextPieces.removeWhere((p) => p.square == move.destination);
@@ -251,17 +249,17 @@ extension MoveValidatorExtension on Position {
             ? 0
             : halfMoveCount + 1,
         fullMoveNumber: sideToMove == PieceColor.black ? fullMoveNumber + 1 : fullMoveNumber,
-        whiteCanCastleKingSide: _updateCastleRight(whiteCanCastleKingSide, movingPiece),
-        whiteCanCastleQueenSide: _updateCastleRight(whiteCanCastleQueenSide, movingPiece),
-        blackCanCastleKingSide: _updateCastleRight(blackCanCastleKingSide, movingPiece),
-        blackCanCastleQueenSide: _updateCastleRight(blackCanCastleQueenSide, movingPiece),
+        whiteCanCastleKingSide: _updateCastlingRights(whiteCanCastleKingSide, movingPiece),
+        whiteCanCastleQueenSide: _updateCastlingRights(whiteCanCastleQueenSide, movingPiece),
+        blackCanCastleKingSide: _updateCastlingRights(blackCanCastleKingSide, movingPiece),
+        blackCanCastleQueenSide: _updateCastlingRights(blackCanCastleQueenSide, movingPiece),
       );
     }
   }
 
   PieceColor _opposite(PieceColor c) => c == PieceColor.white ? PieceColor.black : PieceColor.white;
 
-  bool _updateCastleRight(bool current, Piece piece) {
+  bool _updateCastlingRights(bool current, Piece piece) {
     if (!current) return false;
     if (piece.type != PieceType.king && piece.type != PieceType.rook) {
       return current;
