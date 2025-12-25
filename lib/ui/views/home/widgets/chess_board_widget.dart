@@ -1,6 +1,7 @@
 import 'package:chess_app/ui/common/app_colors.dart';
 import 'package:chess_app/ui/common/app_values.dart';
 import 'package:chess_app/ui/widgets/images/image_card.dart';
+import 'package:chess_app/ui/widgets/text/custom_text.dart';
 import 'package:chess_app/util/extensions.dart';
 import 'package:flutter/material.dart';
 
@@ -115,24 +116,52 @@ class _BoardGrid extends StatelessWidget {
             final isLight = (rank + file) % 2 == 0;
             var highlighted = isHighlighted(square);
             var squareColorValue = isLight ? kEDECD3 : kEFA24B;
+            var textColor = isLight == false ? kEDECD3 : kEFA24B;
+
             return GestureDetector(
               onTap: () => onTapSquare(index),
               child: Container(
                 width: squareSize,
                 height: squareSize,
                 color: squareColorValue,
-                child: highlighted
-                    ? Center(
-                        child: Container(
-                          height: 16,
-                          width: 16,
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
-                          ),
+                child: Stack(
+                  children: [
+                    SizedBox(
+                      child: highlighted
+                          ? Center(
+                              child: Container(
+                                height: 16,
+                                width: 16,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.15),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            )
+                          : null,
+                    ),
+                    if (file == 0)
+                      Positioned(
+                        top: 4,
+                        left: 4,
+                        child: CustomText.w600(
+                          (rank + 1).toString(),
+                          fontSize: 14,
+                          color: textColor,
+                        ),
+                      ),
+                    if (rank == 0)
+                      Positioned(
+                        bottom: 4,
+                        right: 4,
+                        child: CustomText.w600(
+                          square.algebraic.substring(0, 1),
+                          fontSize: 14,
+                          color: textColor,
                         ),
                       )
-                    : null,
+                  ],
+                ),
               ),
             );
           }),
