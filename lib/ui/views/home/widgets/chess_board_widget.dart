@@ -37,9 +37,9 @@ class ChessBoard extends StatelessWidget {
             squareSize: squareSize,
             onTapSquare: (square, rect) async {
               var isLastRank = square.rank == 0 || square.rank == 7;
-
+              var isValidMoveForPiece = highlightedSquares.contains(square);
               PieceType? type;
-              if (selectedPiece?.type == PieceType.pawn && isLastRank) {
+              if (selectedPiece?.type == PieceType.pawn && isLastRank && isValidMoveForPiece) {
                 type = await showMenu<PieceType>(
                   position: RelativeRect.fromRect(
                     rect,
