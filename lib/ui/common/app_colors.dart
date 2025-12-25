@@ -32,3 +32,6 @@ const Color k1E1C1A = Color(0xFF1E1C1A);
 const Color k403E3D = Color(0xFF403E3D);
 const Color kEFA24B = Color(0xFFEFA24B);
 const Color kEDECD3 = Color(0xFFEDECD3);
+const Color k55535F = Color(0xFF55535F);
+const Color k575553 = Color(0xFF575553);
+const Color k817F7B = Color(0xFF817F7B);

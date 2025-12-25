@@ -8,6 +8,7 @@ class Move {
   final PieceType? promoteTo;
 
   final Piece? capturedPiece;
+  final String id;
 
   const Move({
     required this.from,
@@ -15,6 +16,7 @@ class Move {
     required this.piece,
     this.capturedPiece,
     this.promoteTo,
+    this.id = '',
   });
 
   bool isCastlingMove() {

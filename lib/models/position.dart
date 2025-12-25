@@ -14,6 +14,7 @@ class Position {
   final int halfMoveCount;
   final int fullMoveNumber;
   final Square? enPassantSquare;
+  final String id;
 
   const Position({
     required this.pieces,
@@ -25,6 +26,7 @@ class Position {
     required this.halfMoveCount,
     required this.fullMoveNumber,
     this.enPassantSquare,
+    this.id = '',
   });
 
   Piece? pieceAt(Square square) => pieces.nullableFirstWhere((e) => e.square == square);
@@ -77,6 +79,32 @@ class Position {
       enPassantSquare: null,
       halfMoveCount: 0,
       fullMoveNumber: 1,
+    );
+  }
+
+  Position copyWith({
+    List<Piece>? pieces,
+    PieceColor? sideToMove,
+    bool? whiteCanCastleKingSide,
+    bool? whiteCanCastleQueenSide,
+    bool? blackCanCastleKingSide,
+    bool? blackCanCastleQueenSide,
+    int? halfMoveCount,
+    int? fullMoveNumber,
+    Square? enPassantSquare,
+    String? id,
+  }) {
+    return Position(
+      pieces: pieces ?? this.pieces,
+      sideToMove: sideToMove ?? this.sideToMove,
+      whiteCanCastleKingSide: whiteCanCastleKingSide ?? this.whiteCanCastleKingSide,
+      whiteCanCastleQueenSide: whiteCanCastleQueenSide ?? this.whiteCanCastleQueenSide,
+      blackCanCastleKingSide: blackCanCastleKingSide ?? this.blackCanCastleKingSide,
+      blackCanCastleQueenSide: blackCanCastleQueenSide ?? this.blackCanCastleQueenSide,
+      halfMoveCount: halfMoveCount ?? this.halfMoveCount,
+      fullMoveNumber: fullMoveNumber ?? this.fullMoveNumber,
+      enPassantSquare: enPassantSquare ?? this.enPassantSquare,
+      id: id ?? this.id,
     );
   }
 }

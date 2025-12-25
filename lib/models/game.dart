@@ -27,7 +27,7 @@ class Game {
     var newPosition = currentPosition.update(move);
 
     moves.add(move);
-    positions.add(newPosition);
+    positions.add(newPosition.copyWith(id: DateTime.now().millisecondsSinceEpoch.toString()));
 
     return copyWith(positions: positions, moves: moves);
   }
