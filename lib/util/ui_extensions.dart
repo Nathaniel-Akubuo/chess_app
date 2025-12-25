@@ -10,8 +10,28 @@ extension GameExtensions on Game {
         (i + 2 > moves.length) ? moves.length : i + 2,
       ));
     }
-
     return value;
+  }
+
+  String get pgn {
+    final buffer = StringBuffer();
+
+    for (int i = 0; i < moves.length; i++) {
+      final move = moves[i];
+      final positionBefore = positions[i];
+
+      final isWhiteMove = positionBefore.sideToMove == PieceColor.white;
+
+      if (isWhiteMove) {
+        buffer.write('${(i ~/ 2) + 1}. ');
+      }
+
+      final san = move.toAlgebraic;
+
+      buffer.write('$san ');
+    }
+
+    return buffer.toString().trim();
   }
 }
 
@@ -86,6 +106,12 @@ extension MoveExtension on Move {
         case PieceType.pawn:
           break;
       }
+    }
+
+    if (isMate) {
+      buffer.write('#');
+    } else if (isCheck) {
+      buffer.write('+');
     }
 
     return buffer.toString();

@@ -4,11 +4,11 @@ class Move {
   final Square from;
   final Square destination;
   final Piece piece;
-
   final PieceType? promoteTo;
-
   final Piece? capturedPiece;
   final String id;
+  final bool isCheck;
+  final bool isMate;
 
   const Move({
     required this.from,
@@ -16,8 +16,32 @@ class Move {
     required this.piece,
     this.capturedPiece,
     this.promoteTo,
+    this.isCheck = false,
+    this.isMate = false,
     this.id = '',
   });
+
+  Move copyWith({
+    Square? from,
+    Square? destination,
+    Piece? piece,
+    PieceType? promoteTo,
+    Piece? capturedPiece,
+    String? id,
+    bool? isCheck,
+    bool? isMate,
+  }) {
+    return Move(
+      from: from ?? this.from,
+      destination: destination ?? this.destination,
+      piece: piece ?? this.piece,
+      promoteTo: promoteTo ?? this.promoteTo,
+      capturedPiece: capturedPiece ?? this.capturedPiece,
+      id: id ?? this.id,
+      isCheck: isCheck ?? this.isCheck,
+      isMate: isMate ?? this.isMate,
+    );
+  }
 
   bool isCastlingMove() {
     if (piece.type != PieceType.king) return false;

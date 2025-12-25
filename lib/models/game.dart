@@ -26,7 +26,12 @@ class Game {
   Game makeMove(Move move) {
     var newPosition = currentPosition.update(move);
 
-    moves.add(move);
+    moves.add(
+      move.copyWith(
+        isCheck: newPosition.isInCheck(newPosition.sideToMove),
+        isMate: newPosition.isCheckmate(newPosition.sideToMove),
+      ),
+    );
     positions.add(newPosition.copyWith(id: DateTime.now().millisecondsSinceEpoch.toString()));
 
     return copyWith(positions: positions, moves: moves);
