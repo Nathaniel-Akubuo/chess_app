@@ -24,15 +24,23 @@ class HomeViewModel extends IndexTrackingViewModel {
 
     if (isHighlighted) {
       var isValidMoveForPiece = validMovesForSelectedPiece.contains(square);
-      if (isValidMoveForPiece) _updatePositon(highlightedPiece!, square);
-      selectedSquare = null;
-      notifyListeners();
-      return true;
+      if (isValidMoveForPiece) {
+        _updatePositon(highlightedPiece!, square);
+        _setSelectedSquare(null);
+        return true;
+      } else {
+        _setSelectedSquare(null);
+        return false;
+      }
     } else {
-      selectedSquare = square;
-      notifyListeners();
+      _setSelectedSquare(square);
       return false;
     }
+  }
+
+  void _setSelectedSquare(Square? square) {
+    selectedSquare = square;
+    notifyListeners();
   }
 
   List<Square> get validMovesForSelectedPiece =>

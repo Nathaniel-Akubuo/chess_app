@@ -22,7 +22,29 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  final _scrollController = ScrollController();
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToEndOfList() {
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: twoFiftyMS,
+        curve: Curves.linear,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +80,18 @@ class _HomeViewState extends State<HomeView> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                CustomText.w600((i + 1).toString()),
+                                Container(
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: k575553,
+                                  ),
+                                  padding: const EdgeInsets.all(6),
+                                  child: CustomText.w600(
+                                    (i + 1).toString(),
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                ),
                                 horizontalSpace(4),
                                 ...e.map(
                                   (e) => RippleCard(
@@ -79,7 +112,7 @@ class _HomeViewState extends State<HomeView> {
                             ),
                           ),
                         )
-                        .insertBetweenElements(horizontalSpace(12)),
+                        .insertBetweenElements(horizontalSpace(8)),
                   ],
                 ),
               ),
@@ -89,11 +122,9 @@ class _HomeViewState extends State<HomeView> {
             children: [
               ChessBoard(
                 position: viewModel.previewPosition ?? viewModel.position,
-                onTapSquare: (square) {
+                onTapSquare: (square) async {
                   var moveMade = viewModel.selectSquare(square);
-                  if (moveMade) {
-                    _scrollController.animateTo(_scrollController.positions.last.maxScrollExtent, duration: twoFiftyMS, curve: Curves.linear);
-                  }
+                  if (moveMade) _scrollToEndOfList();
                 },
                 size: screenWidth(context),
                 highlightedSquares: viewModel.validMovesForSelectedPiece,
