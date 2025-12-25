@@ -327,6 +327,28 @@ extension MoveValidatorExtension on Position {
     return false;
   }
 
+  bool hasAnyLegalMove(PieceColor color) {
+    for (final piece in pieces.where((p) => p.color == color)) {
+      final moves = validSquaresForPiece(piece);
+      if (moves.isNotEmpty) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool isCheckmate(PieceColor color) {
+    if (isInCheck(color) == false) return false;
+    if (hasAnyLegalMove(color)) return false;
+    return true;
+  }
+
+  bool isStalemate(PieceColor color) {
+    if (isInCheck(color)) return false;
+    if (hasAnyLegalMove(color)) return false;
+    return true;
+  }
+
   bool validateMove(Move move) {
     final piece = pieceAt(move.from);
 
