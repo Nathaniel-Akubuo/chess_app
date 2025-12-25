@@ -300,9 +300,8 @@ extension MoveValidatorExtension on Position {
     Square to,
   ) {
     if (piece.type != PieceType.pawn) {
-      return enPassantSquare;
-    }
-    if ((from.rank - to.rank).abs() == 2) {
+      return null;
+    } else if ((from.rank - to.rank).abs() == 2) {
       return Square.fromFileRank(
         from.file,
         (from.rank + to.rank) ~/ 2,
