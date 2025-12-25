@@ -47,7 +47,11 @@ extension MoveExtension on Move {
         break;
     }
 
-    final isCapture = capturedPiece != null;
+    final isPawnDiagonalMove = piece.type == PieceType.pawn &&
+        (from.file - destination.file).abs() == 1 &&
+        (from.rank - destination.rank).abs() == 1;
+
+    final isCapture = capturedPiece != null || isPawnDiagonalMove;
 
     // Pawn captures include source file
     if (piece.type == PieceType.pawn && isCapture) {
