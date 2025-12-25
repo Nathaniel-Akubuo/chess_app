@@ -100,7 +100,7 @@ class _HomeViewState extends State<HomeView> {
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                                     color: Colors.transparent,
                                     child: CustomText.w500(
-                                      e.toAlgebraic(),
+                                      e.toAlgebraic,
                                       fontSize: 14,
                                       color: e.piece.color == PieceColor.black
                                           ? k817F7B

@@ -16,7 +16,7 @@ extension GameExtensions on Game {
 }
 
 extension MoveExtension on Move {
-  String toAlgebraic() {
+  String get toAlgebraic {
     // Castling
     if (piece.type == PieceType.king &&
         from.rank == destination.rank &&
