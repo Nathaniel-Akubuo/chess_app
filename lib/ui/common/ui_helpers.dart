@@ -3,23 +3,6 @@ import 'dart:math';
 import 'package:chess_app/ui/common/app_colors.dart';
 import 'package:flutter/material.dart';
 
-const double _tinySize = 5.0;
-const double _smallSize = 10.0;
-const double _mediumSize = 25.0;
-const double _largeSize = 50.0;
-const double _massiveSize = 120.0;
-
-const Widget horizontalSpaceTiny = SizedBox(width: _tinySize);
-const Widget horizontalSpaceSmall = SizedBox(width: _smallSize);
-const Widget horizontalSpaceMedium = SizedBox(width: _mediumSize);
-const Widget horizontalSpaceLarge = SizedBox(width: _largeSize);
-
-const Widget verticalSpaceTiny = SizedBox(height: _tinySize);
-const Widget verticalSpaceSmall = SizedBox(height: _smallSize);
-const Widget verticalSpaceMedium = SizedBox(height: _mediumSize);
-const Widget verticalSpaceLarge = SizedBox(height: _largeSize);
-const Widget verticalSpaceMassive = SizedBox(height: _massiveSize);
-
 const k120pxBorderRadius = BorderRadius.all(Radius.circular(120));
 const k100pxBorderRadius = BorderRadius.all(Radius.circular(100));
 const k64pxBorderRadius = BorderRadius.all(Radius.circular(64));
@@ -41,15 +24,8 @@ const kMainPaddingDesktop = EdgeInsets.symmetric(horizontal: 24);
 
 final k1pxBorder = Border.all(color: k777573, width: 1);
 
-Widget spacedDivider = const Column(
-  children: <Widget>[
-    verticalSpaceMedium,
-    Divider(color: Colors.blueGrey, height: 5.0),
-    verticalSpaceMedium,
-  ],
-);
-
 Widget verticalSpace(double height) => SizedBox(height: height);
+Widget horizontalSpace(double width) => SizedBox(width: width);
 
 double screenWidth(BuildContext context) => MediaQuery.of(context).size.width;
 double screenHeight(BuildContext context) => MediaQuery.of(context).size.height;
