@@ -105,6 +105,7 @@ class ScrollableRow extends StatelessWidget {
   final EdgeInsets? padding;
   final CrossAxisAlignment? crossAxisAlignment;
   final MainAxisAlignment? mainAxisAlignment;
+  final ScrollController? controller;
 
   const ScrollableRow({
     super.key,
@@ -112,11 +113,13 @@ class ScrollableRow extends StatelessWidget {
     this.padding,
     this.crossAxisAlignment,
     this.mainAxisAlignment,
+    this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      controller: controller,
       padding: padding,
       scrollDirection: Axis.horizontal,
       child: PaddedRow(

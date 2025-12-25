@@ -18,8 +18,8 @@ class HomeViewModel extends IndexTrackingViewModel {
 
   Piece? get highlightedPiece => selectedSquare == null ? null : position.pieceAt(selectedSquare!);
 
-  void selectSquare(Square square) {
-    if (previewPosition != null && previewPosition?.id != position.id) return;
+  bool selectSquare(Square square) {
+    if (previewPosition != null && previewPosition?.id != position.id) return false;
     var isHighlighted = highlightedPiece != null;
 
     if (isHighlighted) {
@@ -27,9 +27,11 @@ class HomeViewModel extends IndexTrackingViewModel {
       if (isValidMoveForPiece) _updatePositon(highlightedPiece!, square);
       selectedSquare = null;
       notifyListeners();
+      return true;
     } else {
       selectedSquare = square;
       notifyListeners();
+      return false;
     }
   }
 
