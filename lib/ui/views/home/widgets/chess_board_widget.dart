@@ -12,7 +12,7 @@ class ChessBoard extends StatelessWidget {
   final double size;
   final Piece? selectedPiece;
 
-  final Function(Square square) onTapSquare;
+  final Function(Square square, PieceType? promotion) onTapSquare;
   final List<Square> highlightedSquares;
 
   const ChessBoard({
@@ -35,7 +35,49 @@ class ChessBoard extends StatelessWidget {
         children: [
           _BoardGrid(
             squareSize: squareSize,
-            onTapSquare: (index) => onTapSquare(Square(index)),
+            onTapSquare: (square, rect) async {
+              var isLastRank = square.rank == 0 || square.rank == 7;
+
+              PieceType? type;
+              if (selectedPiece?.type == PieceType.pawn && isLastRank) {
+                type = await showMenu<PieceType>(
+                  position: RelativeRect.fromRect(
+                    rect,
+                    Offset.zero & MediaQuery.of(context).size,
+                  ),
+                  context: context,
+                  color: Colors.transparent,
+                  elevation: 0,
+                  menuPadding: EdgeInsets.zero,
+                  items: [
+                    PieceType.bishop,
+                    PieceType.knight,
+                    PieceType.rook,
+                    PieceType.queen,
+                  ]
+                      .map(
+                        (e) => PopupMenuItem<PieceType>(
+                          padding: EdgeInsets.zero,
+                          value: e,
+                          child: Container(
+                            height: squareSize,
+                            width: squareSize,
+                            color: Colors.white,
+                            padding: const EdgeInsetsGeometry.all(8),
+                            child: ImageCard.local(
+                              '${e.name}-${selectedPiece?.color.name}.svg',
+                              size: squareSize,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                );
+                if (type == null) return;
+              }
+
+              onTapSquare(square, type);
+            },
             isHighlighted: (square) => highlightedSquares.contains(square),
           ),
           ..._pieces,
@@ -94,7 +136,7 @@ class ChessBoard extends StatelessWidget {
 
 class _BoardGrid extends StatelessWidget {
   final double squareSize;
-  final Function(int index) onTapSquare;
+  final void Function(Square square, Rect globalRect) onTapSquare;
   final bool Function(Square square) isHighlighted;
 
   const _BoardGrid({
@@ -106,63 +148,71 @@ class _BoardGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: List.generate(8, (_) {
-        var rank = 7 - _;
+      children: List.generate(8, (row) {
+        final rank = 7 - row;
+
         return Row(
           children: List.generate(8, (file) {
             final square = Square.fromFileRank(file, rank);
-            var index = rank * 8 + file;
-
             final isLight = (rank + file) % 2 == 0;
-            var highlighted = isHighlighted(square);
-            var squareColorValue = isLight ? kEDECD3 : kEFA24B;
-            var textColor = isLight == false ? kEDECD3 : kEFA24B;
+            final highlighted = isHighlighted(square);
 
-            return GestureDetector(
-              onTap: () => onTapSquare(index),
-              child: Container(
-                width: squareSize,
-                height: squareSize,
-                color: squareColorValue,
-                child: Stack(
-                  children: [
-                    SizedBox(
-                      child: highlighted
-                          ? Center(
-                              child: Container(
-                                height: 16,
-                                width: 16,
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.15),
-                                  shape: BoxShape.circle,
-                                ),
+            final squareColorValue = isLight ? kEDECD3 : kEFA24B;
+            final textColor = !isLight ? kEDECD3 : kEFA24B;
+
+            return Builder(
+              builder: (squareContext) {
+                return GestureDetector(
+                  onTap: () {
+                    final renderBox = squareContext.findRenderObject() as RenderBox;
+
+                    final topLeft = renderBox.localToGlobal(Offset.zero);
+                    final rect = topLeft & renderBox.size;
+
+                    onTapSquare(square, rect);
+                  },
+                  child: Container(
+                    width: squareSize,
+                    height: squareSize,
+                    color: squareColorValue,
+                    child: Stack(
+                      children: [
+                        if (highlighted)
+                          Center(
+                            child: Container(
+                              height: 16,
+                              width: 16,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
                               ),
-                            )
-                          : null,
+                            ),
+                          ),
+                        if (file == 0)
+                          Positioned(
+                            top: 4,
+                            left: 4,
+                            child: CustomText.w600(
+                              (rank + 1).toString(),
+                              fontSize: 14,
+                              color: textColor,
+                            ),
+                          ),
+                        if (rank == 0)
+                          Positioned(
+                            bottom: 4,
+                            right: 4,
+                            child: CustomText.w600(
+                              square.algebraic.substring(0, 1),
+                              fontSize: 14,
+                              color: textColor,
+                            ),
+                          ),
+                      ],
                     ),
-                    if (file == 0)
-                      Positioned(
-                        top: 4,
-                        left: 4,
-                        child: CustomText.w600(
-                          (rank + 1).toString(),
-                          fontSize: 14,
-                          color: textColor,
-                        ),
-                      ),
-                    if (rank == 0)
-                      Positioned(
-                        bottom: 4,
-                        right: 4,
-                        child: CustomText.w600(
-                          square.algebraic.substring(0, 1),
-                          fontSize: 14,
-                          color: textColor,
-                        ),
-                      )
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             );
           }),
         );

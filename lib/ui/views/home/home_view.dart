@@ -122,8 +122,9 @@ class _HomeViewState extends State<HomeView> {
             children: [
               ChessBoard(
                 position: viewModel.previewPosition ?? viewModel.position,
-                onTapSquare: (square) async {
-                  var moveMade = viewModel.selectSquare(square);
+                selectedPiece: viewModel.highlightedPiece,
+                onTapSquare: (square, promotion) async {
+                  var moveMade = viewModel.selectSquare(square, promotion);
                   if (moveMade) _scrollToEndOfList();
                 },
                 size: screenWidth(context),

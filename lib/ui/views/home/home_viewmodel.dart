@@ -18,14 +18,14 @@ class HomeViewModel extends IndexTrackingViewModel {
 
   Piece? get highlightedPiece => selectedSquare == null ? null : position.pieceAt(selectedSquare!);
 
-  bool selectSquare(Square square) {
+  bool selectSquare(Square square, PieceType? promotion) {
     if (previewPosition != null && previewPosition?.id != position.id) return false;
     var isHighlighted = highlightedPiece != null;
 
     if (isHighlighted) {
       var isValidMoveForPiece = validMovesForSelectedPiece.contains(square);
       if (isValidMoveForPiece) {
-        _updatePositon(highlightedPiece!, square);
+        _updatePositon(highlightedPiece!, square, promotion);
         _setSelectedSquare(null);
         return true;
       } else {
@@ -46,7 +46,7 @@ class HomeViewModel extends IndexTrackingViewModel {
   List<Square> get validMovesForSelectedPiece =>
       highlightedPiece == null ? [] : position.validSquaresForPiece(highlightedPiece!);
 
-  void _updatePositon(Piece piece, Square newSquare) {
+  void _updatePositon(Piece piece, Square newSquare, PieceType? promotion) {
     if (piece.square == null) return;
     var move = Move(
       from: piece.square!,
@@ -54,6 +54,7 @@ class HomeViewModel extends IndexTrackingViewModel {
       piece: piece,
       capturedPiece: position.pieceAt(newSquare),
       id: DateTime.now().millisecondsSinceEpoch.toString(),
+      promoteTo: promotion,
     );
 
     _currentGame = _currentGame.makeMove(move);
