@@ -157,9 +157,8 @@ class _BoardGrid extends StatelessWidget {
             final isLight = (rank + file) % 2 == 0;
             final highlighted = isHighlighted(square);
 
-            final squareColorValue = isLight ? kEDECD3 : kEFA24B;
-            final textColor = !isLight ? kEDECD3 : kEFA24B;
-
+            final squareColorValue = isLight ? kE0E5C4 : k5C8F40;
+            final textColor = !isLight ? kE0E5C4 : k5C8F40;
             return Builder(
               builder: (squareContext) {
                 return GestureDetector(
