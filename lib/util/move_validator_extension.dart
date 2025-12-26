@@ -171,7 +171,7 @@ extension MoveValidatorExtension on Position {
     var piece = move.piece;
 
     final nextPieces = List<Piece>.from(pieces);
-    final isCastle = move.isCastlingMove();
+    final isCastle = move.isCastlingMove;
     if (move.isEnPassantMove(enPassantSquare)) {
       var dir = piece.color == PieceColor.white ? -1 : 1;
       var destination = move.destination;
@@ -335,6 +335,29 @@ extension MoveValidatorExtension on Position {
       }
     }
     return false;
+  }
+
+  List<Move> allValidMoves() {
+    final moves = <Move>[];
+
+    for (final piece in pieces.where((p) => p.color == sideToMove)) {
+      for (final square in validSquaresForPiece(piece)) {
+        final move = Move(
+          from: piece.square!,
+          destination: square,
+          piece: piece,
+        );
+        var newPosition = update(move);
+
+        moves.add(move.copyWith(
+          isCheck: newPosition.isInCheck(newPosition.sideToMove),
+          isMate: newPosition.isCheckmate(newPosition.sideToMove),
+          capturedPiece: pieceAt(square)
+        ));
+      }
+    }
+
+    return moves;
   }
 
   bool isCheckmate(PieceColor color) {

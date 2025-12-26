@@ -9,6 +9,7 @@ class Move {
   final String id;
   final bool isCheck;
   final bool isMate;
+  final String? san;
 
   const Move({
     required this.from,
@@ -19,6 +20,7 @@ class Move {
     this.isCheck = false,
     this.isMate = false,
     this.id = '',
+    this.san,
   });
 
   Move copyWith({
@@ -30,6 +32,7 @@ class Move {
     String? id,
     bool? isCheck,
     bool? isMate,
+    String? san,
   }) {
     return Move(
       from: from ?? this.from,
@@ -40,10 +43,11 @@ class Move {
       id: id ?? this.id,
       isCheck: isCheck ?? this.isCheck,
       isMate: isMate ?? this.isMate,
+      san: san ?? this.san,
     );
   }
 
-  bool isCastlingMove() {
+  bool get isCastlingMove {
     if (piece.type != PieceType.king) return false;
     if (from.rank != destination.rank) return false;
     return (from.file - destination.file).abs() == 2;

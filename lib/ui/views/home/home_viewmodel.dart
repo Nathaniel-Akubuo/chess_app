@@ -1,11 +1,17 @@
 import 'package:chess_app/models/models.dart';
+import 'package:chess_app/ui/common/app_values.dart';
+import 'package:chess_app/util/global_functions.dart';
 import 'package:chess_app/util/move_validator_extension.dart';
+import 'package:flutter/material.dart';
+
 import 'package:stacked/stacked.dart';
 
 class HomeViewModel extends IndexTrackingViewModel {
   late Game _currentGame;
 
-  HomeViewModel() : _currentGame = Game.newGame();
+  HomeViewModel() : _currentGame = Game.fromPgn(bishopAmbigPGN) {
+    WidgetsBinding.instance.addPostFrameCallback((_) => setIndex(_currentGame.moves.length));
+  }
 
   Square? selectedSquare;
 
@@ -19,6 +25,8 @@ class HomeViewModel extends IndexTrackingViewModel {
   Piece? get highlightedPiece => selectedSquare == null ? null : position.pieceAt(selectedSquare!);
 
   bool selectSquare(Square square, PieceType? promotion) {
+    var value = previewPosition?.pieceAt(square);
+    logfn('rank: ${value?.square?.rank}, file: ${value?.square?.file}');
     if (previewPosition != null && previewPosition?.id != position.id) return false;
     var isHighlighted = highlightedPiece != null;
 
@@ -53,7 +61,6 @@ class HomeViewModel extends IndexTrackingViewModel {
       destination: newSquare,
       piece: piece,
       capturedPiece: position.pieceAt(newSquare),
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
       promoteTo: promotion,
     );
 

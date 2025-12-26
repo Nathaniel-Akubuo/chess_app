@@ -1,17 +1,10 @@
+import 'package:chess_app/util/extensions.dart';
+import 'package:chess_app/util/move_validator_extension.dart';
+
 import '../models/models.dart';
 
 extension GameExtensions on Game {
-  List<List<Move>> get movePairs {
-    final value = <List<Move>>[];
-
-    for (var i = 0; i < moves.length; i += 2) {
-      value.add(moves.sublist(
-        i,
-        (i + 2 > moves.length) ? moves.length : i + 2,
-      ));
-    }
-    return value;
-  }
+  List<List<Move>> get movePairs => moves.chunk(2);
 
   String get pgn {
     final buffer = StringBuffer();
@@ -115,5 +108,94 @@ extension MoveExtension on Move {
     }
 
     return buffer.toString();
+  }
+
+  String buildSAN(Position position) {
+    var pieceType = piece.type;
+    var rank = from.rank;
+    var file = from.file;
+    var isPawnDiagonal = piece.type == PieceType.pawn &&
+        (from.file - destination.file).abs() == 1 &&
+        (from.rank - destination.rank).abs() == 1;
+
+    var isCapture = position.pieceAt(destination) != null || isPawnDiagonal;
+
+    if (isCastlingMove) {
+      return destination.file == 6 ? 'O-O' : 'O-O-O';
+    }
+
+    final buffer = StringBuffer();
+
+    if (piece.type != PieceType.pawn) {
+      buffer.write(piece.type.pieceLetter);
+    }
+
+    if (isCapture) buffer.write('x');
+
+    if (piece.type != PieceType.pawn) {
+      var pieces = position.pieces
+          .where((e) =>
+              e.type == pieceType &&
+              e.color == piece.color &&
+              e.initialSquare != piece.initialSquare)
+          .where((e) => position.validSquaresForPiece(e).contains(destination));
+
+      var piecesOnFile = pieces.where((e) => e.square?.file == file);
+      var piecesOnRank = pieces.where((e) => e.square?.rank == rank);
+
+      if (piecesOnFile.isNotEmpty) {
+        buffer.write(rank + 1);
+      }
+
+      if (piecesOnRank.isNotEmpty) {
+        final fileChar = String.fromCharCode('a'.codeUnitAt(0) + from.file);
+        buffer.write(fileChar);
+      }
+
+      if (piecesOnRank.isEmpty && piecesOnFile.isEmpty) {
+        final fileChar = String.fromCharCode('a'.codeUnitAt(0) + from.file);
+        buffer.write(fileChar);
+      }
+    }
+
+    if (piece.type == PieceType.pawn && isCapture) {
+      buffer.write(
+        String.fromCharCode('a'.codeUnitAt(0) + from.file),
+      );
+    }
+
+    buffer.write(destination.algebraic);
+
+    if (promoteTo != null) {
+      buffer.write('=');
+      buffer.write(promoteTo!.pieceLetter);
+    }
+
+    if (isMate) {
+      buffer.write('#');
+    } else if (isCheck) {
+      buffer.write('+');
+    }
+
+    return buffer.toString();
+  }
+}
+
+extension PieceTypeExtensions on PieceType {
+  String get pieceLetter {
+    switch (this) {
+      case PieceType.king:
+        return 'K';
+      case PieceType.queen:
+        return 'Q';
+      case PieceType.rook:
+        return 'R';
+      case PieceType.bishop:
+        return 'B';
+      case PieceType.knight:
+        return 'N';
+      case PieceType.pawn:
+        return '';
+    }
   }
 }
