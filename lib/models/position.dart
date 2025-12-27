@@ -107,4 +107,72 @@ class Position {
       id: id ?? this.id,
     );
   }
+
+  String toFEN() {
+    final buffer = StringBuffer();
+
+    // 1. Piece placement
+    for (int rank = 7; rank >= 0; rank--) {
+      int emptyCount = 0;
+
+      for (int file = 0; file < 8; file++) {
+        final piece =
+            pieces.nullableFirstWhere((p) => p.square?.file == file && p.square?.rank == rank);
+
+        if (piece == null) {
+          emptyCount++;
+        } else {
+          if (emptyCount > 0) {
+            buffer.write(emptyCount);
+            emptyCount = 0;
+          }
+          buffer.write(_pieceToFENChar(piece));
+        }
+      }
+
+      if (emptyCount > 0) buffer.write(emptyCount);
+      if (rank > 0) buffer.write('/');
+    }
+
+    // 2. Active color
+    buffer.write(' ');
+    buffer.write(sideToMove == PieceColor.white ? 'w' : 'b');
+
+    // 3. Castling rights
+    buffer.write(' ');
+    final castling = [
+      whiteCanCastleKingSide ? 'K' : '',
+      whiteCanCastleQueenSide ? 'Q' : '',
+      blackCanCastleKingSide ? 'k' : '',
+      blackCanCastleQueenSide ? 'q' : ''
+    ].where((s) => s.isNotEmpty).join();
+    buffer.write(castling.isEmpty ? '-' : castling);
+
+    // 4. En passant square
+    buffer.write(' ');
+    buffer.write(enPassantSquare?.algebraic ?? '-');
+
+    // 5. Halfmove clock
+    buffer.write(' ');
+    buffer.write(halfMoveCount);
+
+    // 6. Fullmove number
+    buffer.write(' ');
+    buffer.write(fullMoveNumber);
+
+    return buffer.toString();
+  }
+
+  String _pieceToFENChar(Piece piece) {
+    final c = {
+      PieceType.pawn: 'p',
+      PieceType.knight: 'n',
+      PieceType.bishop: 'b',
+      PieceType.rook: 'r',
+      PieceType.queen: 'q',
+      PieceType.king: 'k',
+    }[piece.type]!;
+
+    return piece.color == PieceColor.white ? c.toUpperCase() : c;
+  }
 }
