@@ -82,29 +82,101 @@ class Position {
     );
   }
 
-  Position copyWith({
-    List<Piece>? pieces,
-    PieceColor? sideToMove,
-    bool? whiteCanCastleKingSide,
-    bool? whiteCanCastleQueenSide,
-    bool? blackCanCastleKingSide,
-    bool? blackCanCastleQueenSide,
-    int? halfMoveCount,
-    int? fullMoveNumber,
-    Square? enPassantSquare,
-    String? id,
-  }) {
+  factory Position.fromFEN(String fen) {
+    final parts = fen.trim().split(RegExp(r'\s+'));
+    if (parts.length < 6) {
+      throw ArgumentError('Invalid FEN: $fen');
+    }
+
+    final boardPart = parts[0];
+    final sidePart = parts[1];
+    final castlingPart = parts[2];
+    final enPassantPart = parts[3];
+    final halfMovePart = parts[4];
+    final fullMovePart = parts[5];
+
+    final List<Piece> pieces = [];
+
+    // 1. Piece placement
+    final ranks = boardPart.split('/');
+    if (ranks.length != 8) {
+      throw ArgumentError('Invalid FEN board: $boardPart');
+    }
+
+    for (int rankIndex = 0; rankIndex < 8; rankIndex++) {
+      final rank = ranks[rankIndex];
+      int file = 0;
+      final boardRank = 7 - rankIndex;
+
+      for (final char in rank.split('')) {
+        if (RegExp(r'\d').hasMatch(char)) {
+          file += int.parse(char);
+        } else {
+          final isWhite = char == char.toUpperCase();
+          final pieceType = {
+            'p': PieceType.pawn,
+            'n': PieceType.knight,
+            'b': PieceType.bishop,
+            'r': PieceType.rook,
+            'q': PieceType.queen,
+            'k': PieceType.king,
+          }[char.toLowerCase()];
+
+          if (pieceType == null) {
+            throw ArgumentError('Invalid piece char in FEN: $char');
+          }
+
+          final square = Square.fromFileRank(file, boardRank);
+
+          pieces.add(
+            Piece(
+              type: pieceType,
+              color: isWhite ? PieceColor.white : PieceColor.black,
+              square: square,
+              initialSquare: square, // FEN cannot recover original square
+            ),
+          );
+
+          file++;
+        }
+      }
+
+      if (file != 8) {
+        throw ArgumentError('Invalid FEN rank: $rank');
+      }
+    }
+
+    // 2. Side to move
+    final sideToMove = sidePart == 'w' ? PieceColor.white : PieceColor.black;
+
+    // 3. Castling rights
+    final whiteCanCastleKingSide = castlingPart.contains('K');
+    final whiteCanCastleQueenSide = castlingPart.contains('Q');
+    final blackCanCastleKingSide = castlingPart.contains('k');
+    final blackCanCastleQueenSide = castlingPart.contains('q');
+
+    // 4. En passant
+    Square? enPassantSquare;
+    if (enPassantPart != '-') {
+      final file = enPassantPart.codeUnitAt(0) - 'a'.codeUnitAt(0);
+      final rank = int.parse(enPassantPart[1]) - 1;
+      enPassantSquare = Square.fromFileRank(file, rank);
+    }
+
+    // 5. Halfmove & fullmove
+    final halfMoveCount = int.parse(halfMovePart);
+    final fullMoveNumber = int.parse(fullMovePart);
+
     return Position(
-      pieces: pieces ?? this.pieces,
-      sideToMove: sideToMove ?? this.sideToMove,
-      whiteCanCastleKingSide: whiteCanCastleKingSide ?? this.whiteCanCastleKingSide,
-      whiteCanCastleQueenSide: whiteCanCastleQueenSide ?? this.whiteCanCastleQueenSide,
-      blackCanCastleKingSide: blackCanCastleKingSide ?? this.blackCanCastleKingSide,
-      blackCanCastleQueenSide: blackCanCastleQueenSide ?? this.blackCanCastleQueenSide,
-      halfMoveCount: halfMoveCount ?? this.halfMoveCount,
-      fullMoveNumber: fullMoveNumber ?? this.fullMoveNumber,
-      enPassantSquare: enPassantSquare ?? this.enPassantSquare,
-      id: id ?? this.id,
+      pieces: pieces,
+      sideToMove: sideToMove,
+      whiteCanCastleKingSide: whiteCanCastleKingSide,
+      whiteCanCastleQueenSide: whiteCanCastleQueenSide,
+      blackCanCastleKingSide: blackCanCastleKingSide,
+      blackCanCastleQueenSide: blackCanCastleQueenSide,
+      enPassantSquare: enPassantSquare,
+      halfMoveCount: halfMoveCount,
+      fullMoveNumber: fullMoveNumber,
     );
   }
 
@@ -161,6 +233,32 @@ class Position {
     buffer.write(fullMoveNumber);
 
     return buffer.toString();
+  }
+
+  Position copyWith({
+    List<Piece>? pieces,
+    PieceColor? sideToMove,
+    bool? whiteCanCastleKingSide,
+    bool? whiteCanCastleQueenSide,
+    bool? blackCanCastleKingSide,
+    bool? blackCanCastleQueenSide,
+    int? halfMoveCount,
+    int? fullMoveNumber,
+    Square? enPassantSquare,
+    String? id,
+  }) {
+    return Position(
+      pieces: pieces ?? this.pieces,
+      sideToMove: sideToMove ?? this.sideToMove,
+      whiteCanCastleKingSide: whiteCanCastleKingSide ?? this.whiteCanCastleKingSide,
+      whiteCanCastleQueenSide: whiteCanCastleQueenSide ?? this.whiteCanCastleQueenSide,
+      blackCanCastleKingSide: blackCanCastleKingSide ?? this.blackCanCastleKingSide,
+      blackCanCastleQueenSide: blackCanCastleQueenSide ?? this.blackCanCastleQueenSide,
+      halfMoveCount: halfMoveCount ?? this.halfMoveCount,
+      fullMoveNumber: fullMoveNumber ?? this.fullMoveNumber,
+      enPassantSquare: enPassantSquare ?? this.enPassantSquare,
+      id: id ?? this.id,
+    );
   }
 
   String _pieceToFENChar(Piece piece) {
