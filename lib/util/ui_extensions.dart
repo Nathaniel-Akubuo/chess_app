@@ -19,7 +19,7 @@ extension GameExtensions on Game {
         buffer.write('${(i ~/ 2) + 1}. ');
       }
 
-      final san = move.toAlgebraic;
+      final san = move.buildSAN(positionBefore);
 
       buffer.write('$san ');
     }
@@ -135,8 +135,6 @@ extension MoveExtension on Move {
       );
     }
 
-    if (isCapture) buffer.write('x');
-
     if (piece.type != PieceType.pawn) {
       var pieces = position.pieces.where((e) =>
           e.type == piece.type && e.color == piece.color && e.initialSquare != piece.initialSquare);
@@ -162,6 +160,8 @@ extension MoveExtension on Move {
         }
       }
     }
+
+    if (isCapture) buffer.write('x');
 
     buffer.write(destination.algebraic);
 
