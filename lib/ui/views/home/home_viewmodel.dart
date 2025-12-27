@@ -1,15 +1,17 @@
 import 'package:chess_app/models/models.dart';
-import 'package:chess_app/ui/common/app_values.dart';
+import 'package:chess_app/services/custom_engine.dart';
 import 'package:chess_app/util/global_functions.dart';
 import 'package:chess_app/util/move_validator_extension.dart';
+import 'package:chess_app/util/ui_extensions.dart';
 import 'package:flutter/material.dart';
 
 import 'package:stacked/stacked.dart';
 
 class HomeViewModel extends IndexTrackingViewModel {
   late Game _currentGame;
+  final CustomEngine _engine = CustomEngine(depth: 2);
 
-  HomeViewModel() : _currentGame = Game.fromPgn(bishopAmbigPGN) {
+  HomeViewModel() : _currentGame = Game.newGame() {
     WidgetsBinding.instance.addPostFrameCallback((_) => setIndex(_currentGame.moves.length));
   }
 
@@ -25,8 +27,6 @@ class HomeViewModel extends IndexTrackingViewModel {
   Piece? get highlightedPiece => selectedSquare == null ? null : position.pieceAt(selectedSquare!);
 
   bool selectSquare(Square square, PieceType? promotion) {
-    var value = previewPosition?.pieceAt(square);
-    logfn('rank: ${value?.square?.rank}, file: ${value?.square?.file}');
     if (previewPosition != null && previewPosition?.id != position.id) return false;
     var isHighlighted = highlightedPiece != null;
 
@@ -34,6 +34,7 @@ class HomeViewModel extends IndexTrackingViewModel {
       var isValidMoveForPiece = validMovesForSelectedPiece.contains(square);
       if (isValidMoveForPiece) {
         _updatePositon(highlightedPiece!, square, promotion);
+        _respond();
         _setSelectedSquare(null);
         return true;
       } else {
@@ -66,7 +67,29 @@ class HomeViewModel extends IndexTrackingViewModel {
 
     _currentGame = _currentGame.makeMove(move);
     previewPosition = null;
+    // logfn(currentGame.pgn);
+
     setIndex(currentIndex + 1);
+  }
+
+  Future<void> _respond() async {
+    if (position.isCheckmate(position.sideToMove)) {
+      logfn(currentGame.pgn);
+      logfn('Checkmate');
+      return;
+    }
+    var start = DateTime.now();
+    var response = _engine.findBestMove(position);
+    var end = DateTime.now();
+
+    logfn(end.difference(start).inMilliseconds);
+
+    _updatePositon(response.piece, response.destination, response.promoteTo);
+    if (position.isCheckmate(position.sideToMove)) {
+      logfn(currentGame.pgn);
+
+      logfn("I've been mated");
+    }
   }
 
   void setCurrentMove(Move move) {
