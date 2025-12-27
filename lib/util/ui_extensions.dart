@@ -111,7 +111,6 @@ extension MoveExtension on Move {
   }
 
   String buildSAN(Position position) {
-    var pieceType = piece.type;
     var rank = from.rank;
     var file = from.file;
     var isPawnDiagonal = piece.type == PieceType.pawn &&
@@ -130,38 +129,38 @@ extension MoveExtension on Move {
       buffer.write(piece.type.pieceLetter);
     }
 
+    if (piece.type == PieceType.pawn && isCapture) {
+      buffer.write(
+        String.fromCharCode('a'.codeUnitAt(0) + file),
+      );
+    }
+
     if (isCapture) buffer.write('x');
 
     if (piece.type != PieceType.pawn) {
-      var pieces = position.pieces
-          .where((e) =>
-              e.type == pieceType &&
-              e.color == piece.color &&
-              e.initialSquare != piece.initialSquare)
-          .where((e) => position.validSquaresForPiece(e).contains(destination));
+      var pieces = position.pieces.where((e) =>
+          e.type == piece.type && e.color == piece.color && e.initialSquare != piece.initialSquare);
+
+      var canMakeMove = pieces.any((e) => position.validSquaresForPiece(e).contains(destination));
 
       var piecesOnFile = pieces.where((e) => e.square?.file == file);
       var piecesOnRank = pieces.where((e) => e.square?.rank == rank);
 
-      if (piecesOnFile.isNotEmpty) {
-        buffer.write(rank + 1);
-      }
+      if (canMakeMove) {
+        if (piecesOnFile.isNotEmpty) {
+          buffer.write(rank + 1);
+        }
 
-      if (piecesOnRank.isNotEmpty) {
-        final fileChar = String.fromCharCode('a'.codeUnitAt(0) + from.file);
-        buffer.write(fileChar);
-      }
+        if (piecesOnRank.isNotEmpty) {
+          final fileChar = String.fromCharCode('a'.codeUnitAt(0) + from.file);
+          buffer.write(fileChar);
+        }
 
-      if (piecesOnRank.isEmpty && piecesOnFile.isEmpty) {
-        final fileChar = String.fromCharCode('a'.codeUnitAt(0) + from.file);
-        buffer.write(fileChar);
+        if (piecesOnRank.isEmpty && piecesOnFile.isEmpty) {
+          final fileChar = String.fromCharCode('a'.codeUnitAt(0) + from.file);
+          buffer.write(fileChar);
+        }
       }
-    }
-
-    if (piece.type == PieceType.pawn && isCapture) {
-      buffer.write(
-        String.fromCharCode('a'.codeUnitAt(0) + from.file),
-      );
     }
 
     buffer.write(destination.algebraic);
