@@ -46,15 +46,6 @@ extension MoveExtension on Move {
 
     if (piece.type != PieceType.pawn) {
       buffer.write(piece.type.pieceLetter);
-    }
-
-    if (piece.type == PieceType.pawn && isCapture) {
-      buffer.write(
-        String.fromCharCode('a'.codeUnitAt(0) + file),
-      );
-    }
-
-    if (piece.type != PieceType.pawn) {
       var pieces = position.pieces.where((e) =>
           e.type == piece.type && e.color == piece.color && e.initialSquare != piece.initialSquare);
 
@@ -69,15 +60,15 @@ extension MoveExtension on Move {
         }
 
         if (piecesOnRank.isNotEmpty) {
-          final fileChar = String.fromCharCode('a'.codeUnitAt(0) + from.file);
-          buffer.write(fileChar);
+          buffer.write(from.fileChar);
         }
 
         if (piecesOnRank.isEmpty && piecesOnFile.isEmpty) {
-          final fileChar = String.fromCharCode('a'.codeUnitAt(0) + from.file);
-          buffer.write(fileChar);
+          buffer.write(from.fileChar);
         }
       }
+    } else if (piece.type == PieceType.pawn && isCapture) {
+      buffer.write(from.fileChar);
     }
 
     if (isCapture) buffer.write('x');
