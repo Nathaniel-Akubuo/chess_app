@@ -342,18 +342,33 @@ extension MoveValidatorExtension on Position {
 
     for (final piece in pieces.where((p) => p.color == sideToMove)) {
       for (final square in validSquaresForPiece(piece)) {
-        final move = Move(
-          from: piece.square!,
-          destination: square,
-          piece: piece,
-        );
-        var newPosition = update(move);
+        // Check for pawn promotion
+        if (piece.type == PieceType.pawn && (square.rank == 0 || square.rank == 7)) {
+          // Generate a move for each promotion type
+          for (final promoteTo in [
+            PieceType.queen,
+            PieceType.rook,
+            PieceType.bishop,
+            PieceType.knight
+          ]) {
+            final move = Move(
+              from: piece.square!,
+              destination: square,
+              piece: piece,
+              promoteTo: promoteTo,
+            );
 
-        moves.add(move.copyWith(
-          isCheck: newPosition.isInCheck(newPosition.sideToMove),
-          isMate: newPosition.isCheckmate(newPosition.sideToMove),
-          capturedPiece: pieceAt(square)
-        ));
+            moves.add(move.copyWith(capturedPiece: pieceAt(square)));
+          }
+        } else {
+          final move = Move(
+            from: piece.square!,
+            destination: square,
+            piece: piece,
+          );
+
+          moves.add(move.copyWith(capturedPiece: pieceAt(square)));
+        }
       }
     }
 
