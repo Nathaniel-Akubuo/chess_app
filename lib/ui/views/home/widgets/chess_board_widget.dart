@@ -206,11 +206,11 @@ class _BoardGrid extends StatelessWidget {
         return Row(
           children: List.generate(8, (file) {
             var square = Square.fromFileRank(file, rank);
-            var isLight = (rank + file) % 2 == 0;
+            var isDark = (rank + file) % 2 == 0;
             var highlighted = isHighlighted(square);
 
-            var squareColorValue = isLight ? kE0E5C4 : k5C8F40;
-            var textColor = !isLight ? kE0E5C4 : k5C8F40;
+            var squareColorValue = isDark ? k5C8F40 : kE0E5C4;
+            var textColor = !isDark ? k5C8F40 : kE0E5C4;
             return Builder(
               builder: (squareContext) {
                 return GestureDetector(
