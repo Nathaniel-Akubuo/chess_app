@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:chess_app/ui/common/app_colors.dart';
 import 'package:chess_app/ui/common/app_values.dart';
 import 'package:chess_app/ui/widgets/images/image_card.dart';
@@ -7,7 +9,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../models/models.dart';
 
-class ChessBoard extends StatelessWidget {
+class ChessBoard extends StatefulWidget {
   final Position position;
   final double size;
   final Piece? selectedPiece;
@@ -25,60 +27,110 @@ class ChessBoard extends StatelessWidget {
   });
 
   @override
+  State<ChessBoard> createState() => _ChessBoardState();
+}
+
+class _ChessBoardState extends State<ChessBoard> {
+  final GlobalKey _boardKey = GlobalKey();
+
+  Future<PieceType?> _showPromotionOverlay(Rect rect) async {
+    var completer = Completer<PieceType?>();
+    var squareSize = widget.size / 8;
+    var overlay = Overlay.of(context);
+    var boardBox = _boardKey.currentContext!.findRenderObject() as RenderBox;
+
+    var boardGlobalOffset = boardBox.localToGlobal(Offset.zero);
+
+    var menuHeight = squareSize * 4;
+    var menuTop = widget.selectedPiece!.color == PieceColor.white
+        ? boardGlobalOffset.dy
+        : boardGlobalOffset.dy + boardBox.size.height - menuHeight;
+
+    var menuLeft = boardGlobalOffset.dx + rect.left;
+
+    late OverlayEntry entry;
+
+    entry = OverlayEntry(
+      builder: (_) {
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () {
+                  entry.remove();
+                  completer.complete(null);
+                },
+              ),
+            ),
+            Positioned(
+              left: menuLeft,
+              top: menuTop,
+              child: Material(
+                elevation: 6,
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.white,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: (widget.selectedPiece!.color == PieceColor.white
+                          ? [PieceType.queen, PieceType.rook, PieceType.bishop, PieceType.knight]
+                          : [PieceType.knight, PieceType.bishop, PieceType.rook, PieceType.queen])
+                      .map((type) {
+                    return GestureDetector(
+                      onTap: () {
+                        entry.remove();
+                        completer.complete(type);
+                      },
+                      child: Container(
+                        width: squareSize,
+                        height: squareSize,
+                        padding: const EdgeInsets.all(8),
+                        child: ImageCard.local(
+                          '${type.name}-${widget.selectedPiece!.color.name}.svg',
+                          size: squareSize,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    overlay.insert(entry);
+    return completer.future;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final squareSize = size / 8;
+    var squareSize = widget.size / 8;
 
     return SizedBox(
-      width: size,
-      height: size,
+      key: _boardKey,
+      width: widget.size,
+      height: widget.size,
       child: Stack(
         children: [
           _BoardGrid(
             squareSize: squareSize,
+            isHighlighted: (square) => widget.highlightedSquares.contains(square),
             onTapSquare: (square, rect) async {
+              var isPawn = widget.selectedPiece?.type == PieceType.pawn;
               var isLastRank = square.rank == 0 || square.rank == 7;
-              var isValidMoveForPiece = highlightedSquares.contains(square);
+              var isValidMoveForPiece = widget.highlightedSquares.contains(square);
+
               PieceType? type;
-              if (selectedPiece?.type == PieceType.pawn && isLastRank && isValidMoveForPiece) {
-                type = await showMenu<PieceType>(
-                  position: RelativeRect.fromRect(
-                    rect,
-                    Offset.zero & MediaQuery.of(context).size,
-                  ),
-                  context: context,
-                  color: Colors.transparent,
-                  elevation: 0,
-                  menuPadding: EdgeInsets.zero,
-                  items: [
-                    PieceType.bishop,
-                    PieceType.knight,
-                    PieceType.rook,
-                    PieceType.queen,
-                  ]
-                      .map(
-                        (e) => PopupMenuItem<PieceType>(
-                          padding: EdgeInsets.zero,
-                          value: e,
-                          child: Container(
-                            height: squareSize,
-                            width: squareSize,
-                            color: Colors.white,
-                            padding: const EdgeInsetsGeometry.all(8),
-                            child: ImageCard.local(
-                              '${e.name}-${selectedPiece?.color.name}.svg',
-                              size: squareSize,
-                            ),
-                          ),
-                        ),
-                      )
-                      .toList(),
-                );
+
+              if (isPawn && isLastRank && isValidMoveForPiece) {
+                type = await _showPromotionOverlay(rect);
                 if (type == null) return;
               }
 
-              onTapSquare(square, type);
+              widget.onTapSquare(square, type);
             },
-            isHighlighted: (square) => highlightedSquares.contains(square),
           ),
           ..._pieces,
         ],
@@ -87,19 +139,19 @@ class ChessBoard extends StatelessWidget {
   }
 
   List<Widget> get _pieces {
-    final squareSize = size / 8;
+    var squareSize = widget.size / 8;
 
-    final pieces = <Widget>[];
+    var pieces = <Widget>[];
 
     for (int i = 0; i < 64; i++) {
-      final piece = position.pieces.nullableFirstWhere((e) => e.square?.index == i);
+      var piece = widget.position.pieces.nullableFirstWhere((e) => e.square?.index == i);
       if (piece == null) continue;
 
-      final square = piece.square;
+      var square = piece.square;
 
       if (square == null) continue;
 
-      final offset = _squareToOffset(square, squareSize);
+      var offset = _squareToOffset(square, squareSize);
 
       pieces.add(
         AnimatedPositioned(
@@ -149,24 +201,25 @@ class _BoardGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: List.generate(8, (row) {
-        final rank = 7 - row;
+        var rank = 7 - row;
 
         return Row(
           children: List.generate(8, (file) {
-            final square = Square.fromFileRank(file, rank);
-            final isLight = (rank + file) % 2 == 0;
-            final highlighted = isHighlighted(square);
+            var square = Square.fromFileRank(file, rank);
+            var isLight = (rank + file) % 2 == 0;
+            var highlighted = isHighlighted(square);
 
-            final squareColorValue = isLight ? kE0E5C4 : k5C8F40;
-            final textColor = !isLight ? kE0E5C4 : k5C8F40;
+            var squareColorValue = isLight ? kE0E5C4 : k5C8F40;
+            var textColor = !isLight ? kE0E5C4 : k5C8F40;
             return Builder(
               builder: (squareContext) {
                 return GestureDetector(
                   onTap: () {
-                    final renderBox = squareContext.findRenderObject() as RenderBox;
+                    var renderBox = squareContext.findRenderObject() as RenderBox;
+                    var topLeft = renderBox.localToGlobal(Offset.zero);
+                    var size = renderBox.size;
 
-                    final topLeft = renderBox.localToGlobal(Offset.zero);
-                    final rect = topLeft & renderBox.size;
+                    var rect = Rect.fromLTWH(topLeft.dx, topLeft.dy, size.width, size.height);
 
                     onTapSquare(square, rect);
                   },
