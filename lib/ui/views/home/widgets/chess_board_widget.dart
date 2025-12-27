@@ -287,9 +287,9 @@ class _ChessPiece extends StatelessWidget {
     return GestureDetector(
       child: Center(
         child: Padding(
-          padding: const EdgeInsetsGeometry.all(8),
+          padding: const EdgeInsetsGeometry.all(4),
           child: ImageCard.local(
-            '${piece.type.name}-${piece.color.name}.svg',
+            '${piece.type.name}-${piece.color.name}.png',
             size: squareSize,
           ),
         ),
