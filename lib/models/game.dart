@@ -1,4 +1,3 @@
-import 'package:chess_app/models/parsed_san.dart';
 import 'package:chess_app/util/extensions.dart';
 import 'package:chess_app/util/move_validator_extension.dart';
 import 'package:chess_app/util/ui_extensions.dart';
@@ -28,16 +27,17 @@ class Game {
 
   Game makeMove(Move move) {
     var newPosition = currentPosition.update(move);
-
-    moves.add(
-      move.copyWith(
-        isCheck: newPosition.isInCheck(newPosition.sideToMove),
-        isMate: newPosition.isCheckmate(newPosition.sideToMove),
-        id: moves.length.toString(),
-        san: move.buildSAN(currentPosition),
-      ),
+    var updatedMove = move.copyWith(
+      capturedPiece: currentPosition.pieceAt(move.destination),
+      id: moves.length.toString(),
+      isCheck: newPosition.isInCheck(newPosition.sideToMove),
+      isMate: newPosition.isCheckmate(newPosition.sideToMove),
     );
-    positions.add(newPosition.copyWith(id: DateTime.now().millisecondsSinceEpoch.toString()));
+
+    var moveWithSAN = updatedMove.copyWith(san: updatedMove.buildSAN(currentPosition));
+
+    moves.add(moveWithSAN);
+    positions.add(newPosition.copyWith(id: updatedMove.id));
 
     return copyWith(positions: positions, moves: moves);
   }
@@ -144,18 +144,12 @@ class Game {
       }
 
       var piece = possible.first;
-      var value = Move(
+      move = Move(
         from: piece.square!,
         destination: parsed.destination,
         piece: piece,
         promoteTo: parsed.promotion,
         san: san,
-      );
-      var newPosition = position.update(value);
-
-      move = value.copyWith(
-        isCheck: newPosition.isInCheck(newPosition.sideToMove),
-        isMate: newPosition.isCheckmate(newPosition.sideToMove),
       );
     }
 
