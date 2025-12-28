@@ -1,8 +1,9 @@
+import 'package:chess_app/repo/engine/chess_engine.dart';
 import 'package:chess_app/util/move_validator_extension.dart';
 
-import '../models/models.dart';
+import '../../models/models.dart';
 
-class CustomEngine {
+class CustomEngine extends ChessEngine {
   final int depth;
 
   CustomEngine({this.depth = 4});
@@ -121,7 +122,7 @@ class CustomEngine {
     for (final piece in pos.pieces.where((p) => p.color == color)) {
       moves += pos.validSquaresForPiece(piece).length;
     }
-    return moves;
+    return moves * 2;
   }
 
   bool isPassedPawn(Position pos, Piece pawn) {
@@ -143,7 +144,8 @@ class CustomEngine {
     return pieceBaseValue[piece.type]!;
   }
 
-  int eval(Position pos) {
+  @override
+  int evaluate(Position pos) {
     int score = 0;
 
     for (final piece in pos.pieces) {
@@ -163,15 +165,25 @@ class CustomEngine {
     return score;
   }
 
-  Move findBestMove(Position position) {
+  @override
+  Move? bestMove(Position position) {
     var result = _alphabeta(
       position,
       depth,
       -10000000,
       10000000,
-      true,
+      position.sideToMove == PieceColor.white,
     );
-    return result.bestMove!;
+    if (result.bestMove != null) {
+      return result.bestMove;
+    } else {
+      final moves = position.allValidMoves();
+      if (moves.isNotEmpty) {
+        return moves.first;
+      } else {
+        return null;
+      }
+    }
   }
 
   PositionSearchResult _alphabeta(
@@ -182,7 +194,7 @@ class CustomEngine {
     bool maximizing,
   ) {
     if (depth == 0) {
-      return PositionSearchResult(eval(position), null);
+      return PositionSearchResult(evaluate(position), null);
     }
 
     Move? bestMove;

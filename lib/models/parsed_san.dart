@@ -23,12 +23,8 @@ class ParsedSan {
 
   factory ParsedSan.fromString(String san) {
     // 1. Strip check, mate, annotations
-    var s = san
-        .replaceAll('+', '')
-        .replaceAll('#', '')
-        .replaceAll('!', '')
-        .replaceAll('?', '')
-        .trim();
+    var s =
+        san.replaceAll('+', '').replaceAll('#', '').replaceAll('!', '').replaceAll('?', '').trim();
 
     // 2. Castling
     if (s == 'O-O') {

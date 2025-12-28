@@ -36,9 +36,7 @@ class CustomRoundedButton extends StatelessWidget {
       onTap: onTap,
       color: color ?? kPrimaryGreen,
       borderRadius: radius ?? k8pxBorderRadius,
-      child: isBusy
-          ? const Center(child: BouncingDotsLoader())
-          : child ?? const SizedBox.shrink(),
+      child: isBusy ? const Center(child: BouncingDotsLoader()) : child ?? const SizedBox.shrink(),
     );
   }
 }

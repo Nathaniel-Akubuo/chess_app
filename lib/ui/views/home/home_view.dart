@@ -4,12 +4,14 @@ import 'package:chess_app/ui/common/app_values.dart';
 import 'package:chess_app/ui/common/ui_helpers.dart';
 import 'package:chess_app/ui/views/home/widgets/chess_board_widget.dart';
 import 'package:chess_app/ui/widgets/buttons/custom_card.dart';
+import 'package:chess_app/ui/widgets/buttons/custom_rounded_button.dart';
 import 'package:chess_app/ui/widgets/buttons/ripple_card.dart';
 import 'package:chess_app/ui/widgets/general/custom_layouts.dart';
 import 'package:chess_app/ui/widgets/text/custom_text.dart';
 import 'package:chess_app/util/extensions.dart';
 import 'package:chess_app/util/ui_extensions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:stacked/stacked.dart';
 
 import 'home_viewmodel.dart';
@@ -71,7 +73,7 @@ class _HomeViewState extends State<HomeView> {
                   controller: _scrollController,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    ...viewModel.currentGame.movePairs
+                    ...(viewModel.currentGame?.movePairs ?? [])
                         .mapIndexed(
                           (i, e) => CustomCard(
                             borderRadius: k4pxBorderRadius,
@@ -131,6 +133,12 @@ class _HomeViewState extends State<HomeView> {
                 highlightedSquares: viewModel.validMovesForSelectedPiece,
               ),
               verticalSpace(10),
+              CustomRoundedButton(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: viewModel.currentGame?.pgn ?? ''));
+                  // logfn(viewModel.currentGame?.pgn);
+                },
+              )
             ],
           ),
         );

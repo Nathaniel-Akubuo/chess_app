@@ -15,6 +15,7 @@ class Position {
   final int fullMoveNumber;
   final Square? enPassantSquare;
   final String id;
+  final Move? move;
 
   const Position({
     required this.pieces,
@@ -27,6 +28,7 @@ class Position {
     required this.fullMoveNumber,
     this.enPassantSquare,
     this.id = '',
+    this.move,
   });
 
   Piece? pieceAt(Square square) => pieces.nullableFirstWhere((e) => e.square == square);
@@ -246,6 +248,7 @@ class Position {
     int? fullMoveNumber,
     Square? enPassantSquare,
     String? id,
+    Move? move,
   }) {
     return Position(
       pieces: pieces ?? this.pieces,
@@ -258,6 +261,7 @@ class Position {
       fullMoveNumber: fullMoveNumber ?? this.fullMoveNumber,
       enPassantSquare: enPassantSquare ?? this.enPassantSquare,
       id: id ?? this.id,
+      move: move ?? this.move,
     );
   }
 

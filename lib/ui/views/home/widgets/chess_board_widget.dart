@@ -1,16 +1,20 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:chess_app/ui/common/app_colors.dart';
 import 'package:chess_app/ui/common/app_values.dart';
+import 'package:chess_app/ui/widgets/animations/tip_over.dart';
 import 'package:chess_app/ui/widgets/images/image_card.dart';
 import 'package:chess_app/ui/widgets/text/custom_text.dart';
 import 'package:chess_app/util/extensions.dart';
+import 'package:chess_app/util/global_functions.dart';
+import 'package:chess_app/util/move_validator_extension.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../models/models.dart';
 
 class ChessBoard extends StatefulWidget {
-  final Position position;
+  final Position? position;
   final double size;
   final Piece? selectedPiece;
 
@@ -32,6 +36,35 @@ class ChessBoard extends StatefulWidget {
 
 class _ChessBoardState extends State<ChessBoard> {
   final GlobalKey _boardKey = GlobalKey();
+
+  @override
+  void didUpdateWidget(covariant ChessBoard oldWidget) {
+    bool isNewPosition = widget.position?.move?.id != oldWidget.position?.move?.id;
+    logfn('isnewPosition: $isNewPosition');
+    if (isNewPosition) {
+      var move = widget.position?.move;
+      if (move?.isMate == true) {
+        _playSound('game-end');
+      } else if (move?.isCheck == true) {
+        _playSound('move-check');
+      } else if (move?.isCastlingMove == true) {
+        _playSound('castle');
+      } else if (move?.capturedPiece != null) {
+        _playSound('capture');
+      } else if (move?.promoteTo != null) {
+        _playSound('promote');
+      } else {
+        _playSound('move-self');
+      }
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
+  void _playSound(String path) {
+    var player = AudioPlayer();
+    var source = AssetSource('$path.mp3');
+    player.play(source);
+  }
 
   Future<PieceType?> _showPromotionOverlay(Rect rect) async {
     var completer = Completer<PieceType?>();
@@ -84,9 +117,9 @@ class _ChessBoardState extends State<ChessBoard> {
                       child: Container(
                         width: squareSize,
                         height: squareSize,
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(4),
                         child: ImageCard.local(
-                          '${type.name}-${widget.selectedPiece!.color.name}.svg',
+                          '${type.name}-${widget.selectedPiece!.color.name}.png',
                           size: squareSize,
                         ),
                       ),
@@ -144,7 +177,7 @@ class _ChessBoardState extends State<ChessBoard> {
     var pieces = <Widget>[];
 
     for (int i = 0; i < 64; i++) {
-      var piece = widget.position.pieces.nullableFirstWhere((e) => e.square?.index == i);
+      var piece = widget.position?.pieces.nullableFirstWhere((e) => e.square?.index == i);
       if (piece == null) continue;
 
       var square = piece.square;
@@ -166,6 +199,7 @@ class _ChessBoardState extends State<ChessBoard> {
             child: _ChessPiece(
               piece: piece,
               squareSize: squareSize,
+              position: widget.position,
             ),
           ),
         ),
@@ -211,6 +245,7 @@ class _BoardGrid extends StatelessWidget {
 
             var squareColorValue = isDark ? k5C8F40 : kE0E5C4;
             var textColor = !isDark ? k5C8F40 : kE0E5C4;
+
             return Builder(
               builder: (squareContext) {
                 return GestureDetector(
@@ -226,7 +261,7 @@ class _BoardGrid extends StatelessWidget {
                   child: Container(
                     width: squareSize,
                     height: squareSize,
-                    color: squareColorValue,
+                    decoration: BoxDecoration(color: squareColorValue),
                     child: Stack(
                       children: [
                         if (highlighted)
@@ -246,7 +281,7 @@ class _BoardGrid extends StatelessWidget {
                             left: 4,
                             child: CustomText.w600(
                               (rank + 1).toString(),
-                              fontSize: 14,
+                              fontSize: 12,
                               color: textColor,
                             ),
                           ),
@@ -255,8 +290,8 @@ class _BoardGrid extends StatelessWidget {
                             bottom: 4,
                             right: 4,
                             child: CustomText.w600(
-                              square.algebraic.substring(0, 1),
-                              fontSize: 14,
+                              square.fileChar,
+                              fontSize: 12,
                               color: textColor,
                             ),
                           ),
@@ -276,10 +311,12 @@ class _BoardGrid extends StatelessWidget {
 class _ChessPiece extends StatelessWidget {
   final Piece piece;
   final double squareSize;
+  final Position? position;
 
   const _ChessPiece({
     required this.piece,
     required this.squareSize,
+    required this.position,
   });
 
   @override
@@ -288,9 +325,14 @@ class _ChessPiece extends StatelessWidget {
       child: Center(
         child: Padding(
           padding: const EdgeInsetsGeometry.all(4),
-          child: ImageCard.local(
-            '${piece.type.name}-${piece.color.name}.png',
-            size: squareSize,
+          child: TipOverPhysicsBounce(
+            angle: 45,
+            delay: fiveHundredMS,
+            play: position?.isCheckmate(piece.color) == true && piece.type == PieceType.king,
+            child: ImageCard.local(
+              '${piece.type.name}-${piece.color.name}.png',
+              size: squareSize,
+            ),
           ),
         ),
       ),

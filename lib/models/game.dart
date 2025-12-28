@@ -1,18 +1,21 @@
 import 'package:chess_app/util/extensions.dart';
 import 'package:chess_app/util/move_validator_extension.dart';
-import 'package:chess_app/util/ui_extensions.dart';
 
 import 'models.dart';
+
+enum GameType { online, offline }
 
 class Game {
   final String id;
   final List<Move> moves;
   final List<Position> positions;
+  final GameType type;
 
   Game({
     required this.id,
     required this.moves,
     required this.positions,
+    required this.type,
   });
 
   Position get currentPosition => positions.last;
@@ -22,22 +25,16 @@ class Game {
       id: '',
       moves: [],
       positions: [Position.initial()],
+      type: GameType.offline,
     );
   }
 
   Game makeMove(Move move) {
     var newPosition = currentPosition.update(move);
-    var updatedMove = move.copyWith(
-      capturedPiece: currentPosition.pieceAt(move.destination),
-      id: moves.length.toString(),
-      isCheck: newPosition.isInCheck(newPosition.sideToMove),
-      isMate: newPosition.isCheckmate(newPosition.sideToMove),
-    );
+    var updatedMove = move.copyWith(id: moves.length.toString());
 
-    var moveWithSAN = updatedMove.copyWith(san: updatedMove.buildSAN(currentPosition));
-
-    moves.add(moveWithSAN);
-    positions.add(newPosition.copyWith(id: updatedMove.id));
+    moves.add(updatedMove);
+    positions.add(newPosition.copyWith(id: move.id, move: updatedMove));
 
     return copyWith(positions: positions, moves: moves);
   }
@@ -46,11 +43,13 @@ class Game {
     String? id,
     List<Move>? moves,
     List<Position>? positions,
+    GameType? type,
   }) {
     return Game(
       id: id ?? this.id,
       moves: moves ?? this.moves,
       positions: positions ?? this.positions,
+      type: type ?? this.type,
     );
   }
 
@@ -149,6 +148,9 @@ class Game {
         destination: parsed.destination,
         piece: piece,
         promoteTo: parsed.promotion,
+        capturedPiece: position.pieceAt(parsed.destination),
+        isCheck: san.contains('+'),
+        isMate: san.contains('#'),
         san: san,
       );
     }

@@ -10,6 +10,7 @@ class Move {
   final bool isCheck;
   final bool isMate;
   final String? san;
+  final Duration? duration;
 
   const Move({
     required this.from,
@@ -21,6 +22,7 @@ class Move {
     this.isMate = false,
     this.id = '',
     this.san,
+    this.duration,
   });
 
   Move copyWith({
@@ -33,6 +35,7 @@ class Move {
     bool? isCheck,
     bool? isMate,
     String? san,
+    Duration? duration,
   }) {
     return Move(
       from: from ?? this.from,
@@ -44,6 +47,7 @@ class Move {
       isCheck: isCheck ?? this.isCheck,
       isMate: isMate ?? this.isMate,
       san: san ?? this.san,
+      duration: duration ?? this.duration,
     );
   }
 

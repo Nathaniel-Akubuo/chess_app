@@ -25,13 +25,12 @@ class Square {
     return Square.fromFileRank(file, rank);
   }
 
-  String get algebraic {
-    final fileChar = String.fromCharCode('a'.codeUnitAt(0) + file);
-    return '$fileChar${rank + 1}';
-  }
+  String get algebraic => '$fileChar${rank + 1}';
 
   int get file => index % 8;
   int get rank => index ~/ 8;
+
+  String get fileChar => String.fromCharCode('a'.codeUnitAt(0) + file);
 
   @override
   bool operator ==(covariant Square other) {

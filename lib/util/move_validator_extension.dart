@@ -1,4 +1,5 @@
 import 'package:chess_app/models/models.dart';
+import 'package:chess_app/util/ui_extensions.dart';
 
 extension MoveValidatorExtension on Position {
   List<Square> validSquaresForPiece(Piece piece) {
@@ -140,6 +141,28 @@ extension MoveValidatorExtension on Position {
     return squares;
   }
 
+  Move buildMove(Piece piece, Square newSquare, PieceType? promotion) {
+    var move = Move(
+      from: piece.square!,
+      destination: newSquare,
+      piece: piece,
+      promoteTo: promotion,
+      isCheck: false,
+      capturedPiece: pieceAt(newSquare),
+    );
+
+    var newPosition = update(move);
+
+    var updatedMove = move.copyWith(
+      isCheck: newPosition.isInCheck(newPosition.sideToMove),
+      isMate: newPosition.isCheckmate(newPosition.sideToMove),
+    );
+
+    var san = updatedMove.buildSAN(this);
+
+    return updatedMove.copyWith(san: san);
+  }
+
   List<Square> _slidingSquares(Piece piece, List<List<int>> directions) {
     final squares = <Square>[];
     final from = piece.square!;
@@ -195,6 +218,7 @@ extension MoveValidatorExtension on Position {
         whiteCanCastleQueenSide: whiteCanCastleQueenSide,
         blackCanCastleKingSide: blackCanCastleKingSide,
         blackCanCastleQueenSide: blackCanCastleQueenSide,
+        move: move,
       );
     } else if (isCastle) {
       var from = move.from;
@@ -231,6 +255,7 @@ extension MoveValidatorExtension on Position {
         whiteCanCastleQueenSide: isBlack ? whiteCanCastleQueenSide : false,
         blackCanCastleKingSide: isBlack ? false : blackCanCastleKingSide,
         blackCanCastleQueenSide: isBlack ? false : blackCanCastleQueenSide,
+        move: move,
       );
     } else {
       nextPieces.removeWhere((p) => p.square == move.destination);
@@ -260,6 +285,7 @@ extension MoveValidatorExtension on Position {
         blackCanCastleQueenSide: isBlack
             ? _updateQueenSideCastlingRight(blackCanCastleQueenSide, movingPiece)
             : blackCanCastleQueenSide,
+        move: move,
       );
     }
   }
@@ -375,6 +401,8 @@ extension MoveValidatorExtension on Position {
     return moves;
   }
 
+  bool get isCheckMateForSideToMove => isCheckmate(sideToMove);
+
   bool isCheckmate(PieceColor color) {
     if (isInCheck(color) == false) return false;
     if (hasAnyLegalMove(color)) return false;
@@ -433,6 +461,7 @@ extension MoveValidatorExtension on Position {
       enPassantSquare: enPassantSquare,
       halfMoveCount: halfMoveCount,
       fullMoveNumber: fullMoveNumber,
+      move: move,
     );
   }
 
