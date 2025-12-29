@@ -2,28 +2,29 @@ import 'dart:math' as math;
 import 'package:chess_app/ui/common/app_values.dart';
 import 'package:flutter/material.dart';
 
-class TipOverPhysicsBounce extends StatefulWidget {
+class TipOver extends StatefulWidget {
   final Widget child;
-  final bool play;
-  final double angle; // degrees, max rotation
   final Duration duration;
-  final Duration delay; // new
+  final bool play;
+  final double angle;
+  final Curve curve;
+  final Duration delay;
 
-  const TipOverPhysicsBounce({
+  const TipOver({
     super.key,
     required this.child,
+    this.duration = fiveHundredMS,
     this.play = true,
     this.angle = 75,
-    this.duration = twoSeconds,
+    this.curve = Curves.bounceOut,
     this.delay = Duration.zero,
   });
 
   @override
-  State<TipOverPhysicsBounce> createState() => _TipOverPhysicsBounceState();
+  State<TipOver> createState() => _TipOverState();
 }
 
-class _TipOverPhysicsBounceState extends State<TipOverPhysicsBounce>
-    with SingleTickerProviderStateMixin {
+class _TipOverState extends State<TipOver> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _rotation;
 
@@ -40,7 +41,7 @@ class _TipOverPhysicsBounceState extends State<TipOverPhysicsBounce>
       begin: 0,
       end: widget.angle * math.pi / 180,
     ).animate(
-      CurvedAnimation(parent: _controller, curve: _PhysicsBounceCurve()),
+      CurvedAnimation(parent: _controller, curve: widget.curve),
     );
 
     if (widget.play) {
@@ -56,12 +57,12 @@ class _TipOverPhysicsBounceState extends State<TipOverPhysicsBounce>
   }
 
   @override
-  void didUpdateWidget(covariant TipOverPhysicsBounce oldWidget) {
+  void didUpdateWidget(covariant TipOver oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.play) {
       _startWithDelay();
     } else {
-      _controller.reverse();
+      _controller.reset();
     }
   }
 
@@ -75,16 +76,16 @@ class _TipOverPhysicsBounceState extends State<TipOverPhysicsBounce>
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (_, constraints) {
-        final h = constraints.maxHeight;
+        final height = constraints.maxHeight;
 
         return AnimatedBuilder(
-          animation: _rotation,
+          animation: _controller,
           builder: (_, child) {
             return Transform(
               transform: Matrix4.identity()
-                ..translate(0.0, h)
+                ..translate(0.0, height)
                 ..rotateZ(_rotation.value)
-                ..translate(0.0, -h),
+                ..translate(0.0, -height),
               alignment: Alignment.topCenter,
               child: child,
             );
@@ -93,15 +94,5 @@ class _TipOverPhysicsBounceState extends State<TipOverPhysicsBounce>
         );
       },
     );
-  }
-}
-
-/// Custom physics-style bounce curve (damped oscillation)
-class _PhysicsBounceCurve extends Curve {
-  @override
-  double transform(double t) {
-    const double bounces = 3; // number of bounces
-    const double decay = 2.5; // damping factor
-    return 1 - math.exp(-decay * t) * math.cos(bounces * math.pi * t);
   }
 }

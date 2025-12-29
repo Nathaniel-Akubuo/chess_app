@@ -325,9 +325,10 @@ class _ChessPiece extends StatelessWidget {
       child: Center(
         child: Padding(
           padding: const EdgeInsetsGeometry.all(4),
-          child: TipOverPhysicsBounce(
+          child: TipOver(
             angle: 45,
-            delay: fiveHundredMS,
+            duration: fiveHundredMS,
+            delay: twoFiftyMS,
             play: position?.isCheckmate(piece.color) == true && piece.type == PieceType.king,
             child: ImageCard.local(
               '${piece.type.name}-${piece.color.name}.png',
