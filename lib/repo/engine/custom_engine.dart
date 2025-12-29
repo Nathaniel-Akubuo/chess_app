@@ -1,6 +1,5 @@
 import 'package:chess_app/repo/engine/chess_engine.dart';
 import 'package:chess_app/util/move_validator_extension.dart';
-
 import '../../models/models.dart';
 
 class CustomEngine extends ChessEngine {
@@ -8,6 +7,7 @@ class CustomEngine extends ChessEngine {
 
   CustomEngine({this.depth = 4});
 
+  // Base material values for pieces
   final Map<PieceType, int> pieceBaseValue = {
     PieceType.pawn: 100,
     PieceType.knight: 320,
@@ -17,6 +17,7 @@ class CustomEngine extends ChessEngine {
     PieceType.king: 20000,
   };
 
+  // Piece-square tables for positional evaluation
   final List<List<int>> pawnTable = [
     [0, 0, 0, 0, 0, 0, 0, 0],
     [50, 50, 50, 50, 50, 50, 50, 50],
@@ -99,19 +100,42 @@ class CustomEngine extends ChessEngine {
     return table[rank][file];
   }
 
-  int kingSafety(Position pos, PieceColor color) {
+  int kingSafety(Position pos, PieceColor color, {bool endgame = false}) {
     final king = pos.pieces.firstWhere((p) => p.type == PieceType.king && p.color == color);
     int score = 0;
 
-    for (int df = -1; df <= 1; df++) {
-      final file = king.square!.file + df;
-      if (file < 0 || file > 7) continue;
-      for (int r = 0; r < 8; r++) {
-        final piece = pos.pieceAt(Square.fromFileRank(file, r));
-        if (piece != null && piece.color != color && piece.type != PieceType.king) {
-          score -= 5;
+    // Track if the king has castled
+    bool castled = (king.color == PieceColor.white &&
+            (king.square!.file == 6 || king.square!.file == 2) &&
+            king.square!.rank == 0) ||
+        (king.color == PieceColor.black &&
+            (king.square!.file == 6 || king.square!.file == 2) &&
+            king.square!.rank == 7);
+
+    if (endgame == false) {
+      // Penalty for enemy pieces near king
+      for (int df = -1; df <= 1; df++) {
+        final file = king.square!.file + df;
+        if (file < 0 || file > 7) continue;
+        for (int r = 0; r < 8; r++) {
+          final piece = pos.pieceAt(Square.fromFileRank(file, r));
+          if (piece != null && piece.color != color && piece.type != PieceType.king) {
+            score -= 5;
+          }
         }
       }
+
+      // Bonus for castled king
+      if (castled) {
+        score += 20;
+      } else if ((king.square!.file != 4) ||
+          (king.square!.rank != (color == PieceColor.white ? 0 : 7))) {
+        // Penalize king moving before castling
+        score -= 10;
+      }
+    } else {
+      // Endgame: reward centralization
+      score += (3 - (king.square!.file - 3).abs()) * 10;
     }
 
     return score;
@@ -119,7 +143,7 @@ class CustomEngine extends ChessEngine {
 
   int mobility(Position pos, PieceColor color) {
     int moves = 0;
-    for (final piece in pos.pieces.where((p) => p.color == color)) {
+    for (final piece in pos.pieces.where((p) => p.color == color && p.type != PieceType.king)) {
       moves += pos.validSquaresForPiece(piece).length;
     }
     return moves * 2;
@@ -147,18 +171,25 @@ class CustomEngine extends ChessEngine {
   @override
   int evaluate(Position pos) {
     int score = 0;
+    int totalMaterial = 0;
 
     for (final piece in pos.pieces) {
-      score += piece.color == PieceColor.white ? pieceValue(piece) : -pieceValue(piece);
+      final value = pieceValue(piece);
+      totalMaterial += value;
+      score += piece.color == PieceColor.white ? value : -value;
       score += piece.color == PieceColor.white ? pieceSquareValue(piece) : -pieceSquareValue(piece);
     }
 
-    score += kingSafety(pos, PieceColor.white) - kingSafety(pos, PieceColor.black);
+    bool endgame = totalMaterial < 1400;
+
+    score += kingSafety(pos, PieceColor.white, endgame: endgame) -
+        kingSafety(pos, PieceColor.black, endgame: endgame);
+
     score += mobility(pos, PieceColor.white) - mobility(pos, PieceColor.black);
 
     for (final pawn in pos.pieces.where((p) => p.type == PieceType.pawn)) {
       if (isPassedPawn(pos, pawn)) {
-        score += pawn.color == PieceColor.white ? 20 : -20;
+        score += pawn.color == PieceColor.white ? (endgame ? 50 : 20) : (endgame ? -50 : -20);
       }
     }
 
@@ -167,47 +198,27 @@ class CustomEngine extends ChessEngine {
 
   @override
   Move? bestMove(Position position) {
-    var result = _alphabeta(
-      position,
-      depth,
-      -10000000,
-      10000000,
-      position.sideToMove == PieceColor.white,
-    );
+    final result =
+        _alphabeta(position, depth, -10000000, 10000000, position.sideToMove == PieceColor.white);
     if (result.bestMove != null) {
       return result.bestMove;
     } else {
       final moves = position.allValidMoves();
-      if (moves.isNotEmpty) {
-        return moves.first;
-      } else {
-        return null;
-      }
+      return moves.isNotEmpty ? moves.first : null;
     }
   }
 
   PositionSearchResult _alphabeta(
-    Position position,
-    int depth,
-    int alpha,
-    int beta,
-    bool maximizing,
-  ) {
+      Position position, int depth, int alpha, int beta, bool maximizing) {
     if (depth == 0) {
-      return PositionSearchResult(evaluate(position), null);
+      return _quiescence(position, alpha, beta, maximizing);
     }
 
     Move? bestMove;
 
     for (final move in position.allValidMoves()) {
       final newPos = position.update(move);
-      final result = _alphabeta(
-        newPos,
-        depth - 1,
-        alpha,
-        beta,
-        !maximizing,
-      );
+      final result = _alphabeta(newPos, depth - 1, alpha, beta, !maximizing);
 
       if (maximizing) {
         if (result.score > alpha) {
@@ -225,5 +236,32 @@ class CustomEngine extends ChessEngine {
     }
 
     return PositionSearchResult(maximizing ? alpha : beta, bestMove);
+  }
+
+  PositionSearchResult _quiescence(Position position, int alpha, int beta, bool maximizing) {
+    int standPat = evaluate(position);
+
+    if (maximizing) {
+      if (standPat >= beta) return PositionSearchResult(beta, null);
+      if (standPat > alpha) alpha = standPat;
+    } else {
+      if (standPat <= alpha) return PositionSearchResult(alpha, null);
+      if (standPat < beta) beta = standPat;
+    }
+
+    for (final move in position.allValidMoves().where((m) => m.capturedPiece != null)) {
+      final newPos = position.update(move);
+      final result = _quiescence(newPos, alpha, beta, !maximizing);
+
+      if (maximizing) {
+        if (result.score > alpha) alpha = result.score;
+        if (alpha >= beta) break;
+      } else {
+        if (result.score < beta) beta = result.score;
+        if (beta <= alpha) break;
+      }
+    }
+
+    return PositionSearchResult(maximizing ? alpha : beta, null);
   }
 }
