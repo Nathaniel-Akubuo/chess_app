@@ -153,9 +153,11 @@ extension MoveValidatorExtension on Position {
 
     var newPosition = update(move);
 
+    var opp = newPosition.sideToMove;
+
     var updatedMove = move.copyWith(
-      isCheck: newPosition.isInCheck(newPosition.sideToMove),
-      isMate: newPosition.isCheckmate(newPosition.sideToMove),
+      isCheck: newPosition.isInCheck(opp),
+      isMate: newPosition.isCheckmate(opp),
     );
 
     var san = updatedMove.buildSAN(this);
@@ -190,7 +192,6 @@ extension MoveValidatorExtension on Position {
   }
 
   Position update(Move move) {
-    assert(validateMove(move));
     var piece = move.piece;
 
     final nextPieces = List<Piece>.from(pieces);
@@ -341,23 +342,46 @@ extension MoveValidatorExtension on Position {
 
     final kingSquare = king.square!;
 
-    for (final piece in pieces) {
-      if (piece.color == color) continue;
-
-      final move = Move(from: piece.square!, destination: kingSquare, piece: piece);
-      if (_validatePieceMove(piece, move, king)) {
+    for (final attacker in pieces.where((p) => p.color != color)) {
+      if (_attacksSquare(attacker, kingSquare)) {
         return true;
       }
     }
-
     return false;
+  }
+
+  bool _attacksSquare(Piece piece, Square target) {
+    final from = piece.square!;
+    final df = target.file - from.file;
+    final dr = target.rank - from.rank;
+
+    switch (piece.type) {
+      case PieceType.pawn:
+        final dir = piece.color == PieceColor.white ? 1 : -1;
+        return dr == dir && df.abs() == 1;
+
+      case PieceType.knight:
+        return (df.abs() == 1 && dr.abs() == 2) || (df.abs() == 2 && dr.abs() == 1);
+
+      case PieceType.bishop:
+        return df.abs() == dr.abs() && _pathIsClear(from, target);
+
+      case PieceType.rook:
+        return (df == 0 || dr == 0) && _pathIsClear(from, target);
+
+      case PieceType.queen:
+        return ((df == 0 || dr == 0) || df.abs() == dr.abs()) && _pathIsClear(from, target);
+
+      case PieceType.king:
+        return df.abs() <= 1 && dr.abs() <= 1;
+    }
   }
 
   bool hasAnyLegalMove(PieceColor color) {
     for (final piece in pieces.where((p) => p.color == color)) {
-      final moves = validSquaresForPiece(piece);
-      if (moves.isNotEmpty) {
-        return true;
+      for (final square in allSquaresForPiece(piece)) {
+        final move = Move(from: piece.square!, destination: square, piece: piece);
+        if (validateMove(move)) return true;
       }
     }
     return false;
@@ -431,38 +455,12 @@ extension MoveValidatorExtension on Position {
       return false;
     }
 
-    final simulated = _simulateMove(move);
+    final simulated = update(move);
     if (simulated.isInCheck(piece.color)) {
       return false;
     }
 
     return true;
-  }
-
-  Position _simulateMove(Move move) {
-    var piece = move.piece;
-
-    final nextPieces = List<Piece>.from(pieces);
-
-    nextPieces.removeWhere((p) => p.square == move.destination);
-
-    final movingPiece = move.piece.copyWith(type: move.promoteTo, square: move.destination);
-
-    final index = nextPieces.indexWhere((p) => p.initialSquare == piece.initialSquare);
-    nextPieces[index] = movingPiece;
-
-    return Position(
-      pieces: nextPieces,
-      sideToMove: sideToMove,
-      whiteCanCastleKingSide: whiteCanCastleKingSide,
-      whiteCanCastleQueenSide: whiteCanCastleQueenSide,
-      blackCanCastleKingSide: blackCanCastleKingSide,
-      blackCanCastleQueenSide: blackCanCastleQueenSide,
-      enPassantSquare: enPassantSquare,
-      halfMoveCount: halfMoveCount,
-      fullMoveNumber: fullMoveNumber,
-      move: move,
-    );
   }
 
   bool _validatePieceMove(
@@ -604,7 +602,7 @@ extension MoveValidatorExtension on Position {
         from.rank,
       );
 
-      final simulated = _simulateMove(Move(from: from, destination: intermediate, piece: king));
+      final simulated = update(Move(from: from, destination: intermediate, piece: king));
 
       if (simulated.isInCheck(king.color)) {
         return false;
