@@ -7,7 +7,6 @@ import 'package:chess_app/ui/widgets/animations/tip_over.dart';
 import 'package:chess_app/ui/widgets/images/image_card.dart';
 import 'package:chess_app/ui/widgets/text/custom_text.dart';
 import 'package:chess_app/util/extensions.dart';
-import 'package:chess_app/util/global_functions.dart';
 import 'package:chess_app/util/move_validator_extension.dart';
 import 'package:flutter/material.dart';
 
@@ -40,7 +39,7 @@ class _ChessBoardState extends State<ChessBoard> {
   @override
   void didUpdateWidget(covariant ChessBoard oldWidget) {
     bool isNewPosition = widget.position?.move?.id != oldWidget.position?.move?.id;
-    logfn('isnewPosition: $isNewPosition');
+
     if (isNewPosition) {
       var move = widget.position?.move;
       if (move?.isMate == true) {
