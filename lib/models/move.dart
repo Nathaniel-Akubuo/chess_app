@@ -57,6 +57,8 @@ class Move {
     return (from.file - destination.file).abs() == 2;
   }
 
+  bool get isCapture => capturedPiece != null;
+
   bool isEnPassantMove(Square? enPassantSquare) {
     if (piece.type != PieceType.pawn) return false;
     if (enPassantSquare == null) return false;
