@@ -1,4 +1,5 @@
 import 'package:chess_app/ui/common/app_colors.dart';
+import 'package:chess_app/ui/common/app_values.dart';
 import 'package:flutter/material.dart';
 
 class EvalBar extends StatelessWidget {
@@ -19,13 +20,20 @@ class EvalBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: height,
-      child: LinearProgressIndicator(
-        value: _eval,
-        backgroundColor: k343230,
-        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-      ),
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.5, end: _eval),
+      duration: sevenFiftyMS,
+      curve: Curves.linear,
+      builder: (context, value, _) {
+        return SizedBox(
+          height: height,
+          child: LinearProgressIndicator(
+            value: value,
+            backgroundColor: k343230,
+            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
+        );
+      },
     );
   }
 }
