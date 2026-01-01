@@ -1,33 +1,31 @@
 import 'dart:math';
 
+import 'package:chess_app/ui/common/app_colors.dart';
 import 'package:flutter/material.dart';
 
-const double _tinySize = 5.0;
-const double _smallSize = 10.0;
-const double _mediumSize = 25.0;
-const double _largeSize = 50.0;
-const double _massiveSize = 120.0;
+const k120pxBorderRadius = BorderRadius.all(Radius.circular(120));
+const k100pxBorderRadius = BorderRadius.all(Radius.circular(100));
+const k64pxBorderRadius = BorderRadius.all(Radius.circular(64));
+const k40pxBorderRadius = BorderRadius.all(Radius.circular(40));
+const k32pxBorderRadius = BorderRadius.all(Radius.circular(32));
+const k24pxBorderRadius = BorderRadius.all(Radius.circular(24));
+const k20pxBorderRadius = BorderRadius.all(Radius.circular(20));
+const k16pxBorderRadius = BorderRadius.all(Radius.circular(16));
+const k12pxBorderRadius = BorderRadius.all(Radius.circular(12));
+const k10pxBorderRadius = BorderRadius.all(Radius.circular(10));
+const k8pxBorderRadius = BorderRadius.all(Radius.circular(8));
+const k6pxBorderRadius = BorderRadius.all(Radius.circular(6));
+const k4pxBorderRadius = BorderRadius.all(Radius.circular(4));
 
-const Widget horizontalSpaceTiny = SizedBox(width: _tinySize);
-const Widget horizontalSpaceSmall = SizedBox(width: _smallSize);
-const Widget horizontalSpaceMedium = SizedBox(width: _mediumSize);
-const Widget horizontalSpaceLarge = SizedBox(width: _largeSize);
+const k24pxSheetRadius = BorderRadius.vertical(top: Radius.circular(24));
 
-const Widget verticalSpaceTiny = SizedBox(height: _tinySize);
-const Widget verticalSpaceSmall = SizedBox(height: _smallSize);
-const Widget verticalSpaceMedium = SizedBox(height: _mediumSize);
-const Widget verticalSpaceLarge = SizedBox(height: _largeSize);
-const Widget verticalSpaceMassive = SizedBox(height: _massiveSize);
+const kMainPadding = EdgeInsets.symmetric(horizontal: 16);
+const kMainPaddingDesktop = EdgeInsets.symmetric(horizontal: 24);
 
-Widget spacedDivider = const Column(
-  children: <Widget>[
-    verticalSpaceMedium,
-    Divider(color: Colors.blueGrey, height: 5.0),
-    verticalSpaceMedium,
-  ],
-);
+final k1pxBorder = Border.all(color: k777573, width: 1);
 
 Widget verticalSpace(double height) => SizedBox(height: height);
+Widget horizontalSpace(double width) => SizedBox(width: width);
 
 double screenWidth(BuildContext context) => MediaQuery.of(context).size.width;
 double screenHeight(BuildContext context) => MediaQuery.of(context).size.height;
@@ -48,14 +46,11 @@ double screenWidthFraction(
 }) =>
     min((screenWidth(context) - offsetBy) / dividedBy, max);
 
-double halfScreenWidth(BuildContext context) =>
-    screenWidthFraction(context, dividedBy: 2);
+double halfScreenWidth(BuildContext context) => screenWidthFraction(context, dividedBy: 2);
 
-double thirdScreenWidth(BuildContext context) =>
-    screenWidthFraction(context, dividedBy: 3);
+double thirdScreenWidth(BuildContext context) => screenWidthFraction(context, dividedBy: 3);
 
-double quarterScreenWidth(BuildContext context) =>
-    screenWidthFraction(context, dividedBy: 4);
+double quarterScreenWidth(BuildContext context) => screenWidthFraction(context, dividedBy: 4);
 
 double getResponsiveHorizontalSpaceMedium(BuildContext context) =>
     screenWidthFraction(context, dividedBy: 10);
@@ -87,4 +82,51 @@ double getResponsiveFontSize(
   );
 
   return responsiveSize;
+}
+
+class Inter extends TextStyle {
+  const Inter.w300(double fontSize, {Color? color})
+      : super(
+          fontFamily: 'Inter',
+          color: color ?? kTextColor,
+          fontWeight: FontWeight.w300,
+          fontSize: fontSize,
+          letterSpacing: -0.64,
+        );
+
+  const Inter.w400(double fontSize, {Color? color})
+      : super(
+          fontFamily: 'Inter',
+          color: color ?? kTextColor,
+          fontWeight: FontWeight.w400,
+          fontSize: fontSize,
+          letterSpacing: -0.64,
+        );
+
+  const Inter.w500(double fontSize, {Color? color})
+      : super(
+          fontFamily: 'Inter',
+          color: color ?? kTextColor,
+          fontWeight: FontWeight.w500,
+          fontSize: fontSize,
+          letterSpacing: -0.64,
+        );
+
+  const Inter.w600(double fontSize, {Color? color})
+      : super(
+          fontFamily: 'Inter',
+          color: color ?? kTextColor,
+          fontWeight: FontWeight.w600,
+          fontSize: fontSize,
+          letterSpacing: -0.64,
+        );
+
+  const Inter.w700(double fontSize, {Color? color})
+      : super(
+          fontFamily: 'Inter',
+          color: color ?? kTextColor,
+          fontWeight: FontWeight.w700,
+          fontSize: fontSize,
+          letterSpacing: -0.64,
+        );
 }

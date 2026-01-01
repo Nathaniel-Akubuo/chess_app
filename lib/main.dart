@@ -1,3 +1,4 @@
+import 'package:chess_app/ui/common/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:chess_app/app/app.bottomsheets.dart';
 import 'package:chess_app/app/app.dialogs.dart';
@@ -19,7 +20,12 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       initialRoute: Routes.startupView,
+      theme: ThemeData(
+        appBarTheme: const AppBarTheme(color: k343230),
+        scaffoldBackgroundColor: k343230,
+      ),
       onGenerateRoute: StackedRouter().onGenerateRoute,
       navigatorKey: StackedService.navigatorKey,
       navigatorObservers: [StackedService.routeObserver],

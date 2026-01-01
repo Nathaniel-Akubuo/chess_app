@@ -61,8 +61,7 @@ MockBottomSheetService getAndRegisterBottomSheetService<T>({
       description: anyNamed('description'),
     ),
   ).thenAnswer(
-    (realInvocation) =>
-        Future.value(showCustomSheetResponse ?? SheetResponse<T>()),
+    (realInvocation) => Future.value(showCustomSheetResponse ?? SheetResponse<T>()),
   );
 
   locator.registerSingleton<BottomSheetService>(service);
