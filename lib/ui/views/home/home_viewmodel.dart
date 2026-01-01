@@ -1,5 +1,6 @@
 import 'package:chess_app/app/app.locator.dart';
 import 'package:chess_app/models/models.dart';
+import 'package:chess_app/repo/engine/optimized_engine.dart';
 import 'package:chess_app/services/game_service.dart';
 
 import 'package:chess_app/util/global_functions.dart';
@@ -25,6 +26,13 @@ class HomeViewModel extends IndexTrackingViewModel {
   Position? get position => currentGame?.currentPosition;
 
   Piece? get highlightedPiece => selectedSquare == null ? null : position?.pieceAt(selectedSquare!);
+
+  int get eval {
+    var value = (previewPosition ?? position);
+
+    if (value == null) return 0;
+    return OptimizedEngine().evaluate(value);
+  }
 
   bool selectSquare(Square square, PieceType? promotion) {
     if (previewPosition != null && previewPosition?.id != position?.id) return false;

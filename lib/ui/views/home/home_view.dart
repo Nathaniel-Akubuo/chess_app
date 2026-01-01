@@ -4,14 +4,13 @@ import 'package:chess_app/ui/common/app_values.dart';
 import 'package:chess_app/ui/common/ui_helpers.dart';
 import 'package:chess_app/ui/views/home/widgets/chess_board_widget.dart';
 import 'package:chess_app/ui/widgets/buttons/custom_card.dart';
-import 'package:chess_app/ui/widgets/buttons/custom_rounded_button.dart';
 import 'package:chess_app/ui/widgets/buttons/ripple_card.dart';
 import 'package:chess_app/ui/widgets/general/custom_layouts.dart';
+import 'package:chess_app/ui/widgets/general/eval_bar.dart';
 import 'package:chess_app/ui/widgets/text/custom_text.dart';
 import 'package:chess_app/util/extensions.dart';
 import 'package:chess_app/util/ui_extensions.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:stacked/stacked.dart';
 
 import 'home_viewmodel.dart';
@@ -66,57 +65,63 @@ class _HomeViewState extends State<HomeView> {
               ),
             ],
             bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(24),
-              child: SizedBox(
-                width: screenWidth(context),
-                child: ScrollableRow(
-                  controller: _scrollController,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    ...(viewModel.currentGame?.movePairs ?? [])
-                        .mapIndexed(
-                          (i, e) => CustomCard(
-                            borderRadius: k4pxBorderRadius,
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                            color: kPrimaryColor,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: k575553,
-                                  ),
-                                  padding: const EdgeInsets.all(6),
-                                  child: CustomText.w600(
-                                    (i + 1).toString(),
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                horizontalSpace(4),
-                                ...e.map(
-                                  (e) => RippleCard(
-                                    onTap: () => viewModel.setCurrentMove(e),
-                                    borderRadius: k4pxBorderRadius,
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                                    color: Colors.transparent,
-                                    child: CustomText.w500(
-                                      e.san ?? '',
-                                      fontSize: 14,
-                                      color: e.piece.color == PieceColor.black
-                                          ? k817F7B
-                                          : Colors.white,
+              preferredSize: const Size.fromHeight(32),
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: screenWidth(context),
+                    child: ScrollableRow(
+                      controller: _scrollController,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        ...(viewModel.currentGame?.movePairs ?? [])
+                            .mapIndexed(
+                              (i, e) => CustomCard(
+                                borderRadius: k4pxBorderRadius,
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                color: kPrimaryColor,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: k575553,
+                                      ),
+                                      padding: const EdgeInsets.all(6),
+                                      child: CustomText.w600(
+                                        (i + 1).toString(),
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                      ),
                                     ),
-                                  ),
+                                    horizontalSpace(4),
+                                    ...e.map(
+                                      (e) => RippleCard(
+                                        onTap: () => viewModel.setCurrentMove(e),
+                                        borderRadius: k4pxBorderRadius,
+                                        padding:
+                                            const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                        color: Colors.transparent,
+                                        child: CustomText.w500(
+                                          e.san ?? '',
+                                          fontSize: 14,
+                                          color: e.piece.color == PieceColor.black
+                                              ? k817F7B
+                                              : Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
-                        )
-                        .insertBetweenElements(horizontalSpace(8)),
-                  ],
-                ),
+                              ),
+                            )
+                            .insertBetweenElements(horizontalSpace(8)),
+                      ],
+                    ),
+                  ),
+                  EvalBar(eval: viewModel.eval)
+                ],
               ),
             ),
           ),
@@ -133,12 +138,6 @@ class _HomeViewState extends State<HomeView> {
                 highlightedSquares: viewModel.validMovesForSelectedPiece,
               ),
               verticalSpace(10),
-              CustomRoundedButton(
-                onTap: () {
-                  Clipboard.setData(ClipboardData(text: viewModel.currentGame?.pgn ?? ''));
-                  // logfn(viewModel.currentGame?.pgn);
-                },
-              )
             ],
           ),
         );
