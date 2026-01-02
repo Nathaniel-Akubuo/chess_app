@@ -9,12 +9,14 @@ class Game {
   final String id;
   final List<Move> moves;
   final List<Position> positions;
+  final List<Piece> capturedPieces;
   final GameType type;
 
   Game({
     required this.id,
     required this.moves,
     required this.positions,
+    required this.capturedPieces,
     required this.type,
   });
 
@@ -26,6 +28,7 @@ class Game {
       moves: [],
       positions: [Position.initial()],
       type: GameType.offline,
+      capturedPieces: [],
     );
   }
 
@@ -36,6 +39,10 @@ class Game {
     moves.add(updatedMove);
     positions.add(newPosition.copyWith(id: move.id, move: updatedMove));
 
+    if (move.capturedPiece != null) {
+      capturedPieces.add(move.capturedPiece!);
+    }
+
     return copyWith(positions: positions, moves: moves);
   }
 
@@ -43,12 +50,14 @@ class Game {
     String? id,
     List<Move>? moves,
     List<Position>? positions,
+    List<Piece>? capturedPieces,
     GameType? type,
   }) {
     return Game(
       id: id ?? this.id,
       moves: moves ?? this.moves,
       positions: positions ?? this.positions,
+      capturedPieces: capturedPieces ?? this.capturedPieces,
       type: type ?? this.type,
     );
   }
@@ -137,8 +146,7 @@ class Game {
 
       if (possible.length > 1) {
         throw StateError('Ambiguous SAN move: $san');
-      }
-      if (possible.isEmpty) {
+      } else if (possible.isEmpty) {
         throw StateError('Could not parse SAN move: $san');
       }
 
