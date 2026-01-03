@@ -24,16 +24,14 @@ class EvalBar extends StatelessWidget {
       tween: Tween<double>(begin: 0.5, end: _eval),
       duration: sevenFiftyMS,
       curve: Curves.linear,
-      builder: (context, value, _) {
-        return SizedBox(
-          height: height,
-          child: LinearProgressIndicator(
-            value: value,
-            backgroundColor: k343230,
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-          ),
-        );
-      },
+      builder: (context, value, _) => SizedBox(
+        height: height,
+        child: LinearProgressIndicator(
+          value: value,
+          backgroundColor: k343230,
+          valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+        ),
+      ),
     );
   }
 }
