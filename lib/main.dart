@@ -23,7 +23,7 @@ class MainApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: Routes.startupView,
       theme: ThemeData(
-        appBarTheme: const AppBarTheme(color: k343230),
+        appBarTheme: const AppBarTheme(backgroundColor: k343230),
         scaffoldBackgroundColor: k343230,
       ),
       onGenerateRoute: StackedRouter().onGenerateRoute,
