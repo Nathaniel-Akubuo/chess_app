@@ -12,6 +12,8 @@ import 'package:stacked/stacked.dart';
 class HomeViewModel extends IndexTrackingViewModel {
   final _gameService = locator<GameService>();
 
+  PieceColor userSide = PieceColor.white;
+
   HomeViewModel() {
     _gameService.startGame();
   }
@@ -109,6 +111,10 @@ class HomeViewModel extends IndexTrackingViewModel {
   void undo() {
     _gameService.undoLastMove();
     previewPosition = currentGame?.currentPosition;
+
+    if (currentGame?.currentPosition.sideToMove != userSide) {
+      _respond();
+    }
 
     notifyListeners();
   }
