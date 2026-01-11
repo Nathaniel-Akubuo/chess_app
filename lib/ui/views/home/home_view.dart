@@ -56,12 +56,17 @@ class _HomeViewState extends State<HomeView> {
           appBar: AppBar(
             actions: [
               IconButton(
-                icon: const Icon(Icons.chevron_left_rounded, color: Colors.white),
+                icon: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 32),
                 onPressed: () => viewModel.moveBackward(),
               ),
+              horizontalSpace(16),
               IconButton(
-                icon: const Icon(Icons.chevron_right_rounded, color: Colors.white),
+                icon: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 32),
                 onPressed: () => viewModel.moveForward(),
+              ),
+              IconButton(
+                icon: const Icon(Icons.undo, color: Colors.white, size: 32),
+                onPressed: () => viewModel.undo(),
               ),
             ],
             bottom: PreferredSize(

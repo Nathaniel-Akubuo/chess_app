@@ -1,4 +1,4 @@
-import 'package:chess_app/repo/engine/custom_engine.dart';
+import 'package:chess_app/repo/engine/optimized_engine.dart';
 import 'package:chess_app/util/move_validator_extension.dart';
 import 'package:flutter/foundation.dart';
 import 'package:stacked/stacked.dart';
@@ -14,16 +14,21 @@ class GameService with ListenableServiceMixin {
     _currentGame = Game.newGame();
   }
 
+  void undoLastMove() {
+    _currentGame = _currentGame?.undoLastMove();
+    notifyListeners();
+  }
+
   Future<Move?> getEngineMove(Position? position) async {
     if (position == null) return null;
     return await compute(_engineWorker, {
       'position': position,
-      'depth': 4,
+      'depth': 3,
     });
   }
 
   Move? _engineWorker(Map<String, dynamic> args) {
-    final engine = CustomEngine(depth: args['depth']);
+    final engine = OptimizedEngine(depth: args['depth']);
     return engine.bestMove(args['position']);
   }
 

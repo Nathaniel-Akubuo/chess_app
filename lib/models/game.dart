@@ -46,6 +46,12 @@ class Game {
     return copyWith(positions: positions, moves: moves);
   }
 
+  Game undoLastMove() {
+    moves.removeLast();
+    positions.removeLast();
+    return copyWith();
+  }
+
   Game copyWith({
     String? id,
     List<Move>? moves,
