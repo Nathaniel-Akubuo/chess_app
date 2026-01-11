@@ -3,6 +3,7 @@ import 'package:chess_app/ui/common/app_colors.dart';
 import 'package:chess_app/ui/common/app_values.dart';
 import 'package:chess_app/ui/common/ui_helpers.dart';
 import 'package:chess_app/ui/views/home/widgets/chess_board_widget.dart';
+import 'package:chess_app/ui/views/home/widgets/game_action_button.dart';
 import 'package:chess_app/ui/widgets/buttons/custom_card.dart';
 import 'package:chess_app/ui/widgets/buttons/ripple_card.dart';
 import 'package:chess_app/ui/widgets/general/custom_layouts.dart';
@@ -11,6 +12,7 @@ import 'package:chess_app/ui/widgets/text/custom_text.dart';
 import 'package:chess_app/util/extensions.dart';
 import 'package:chess_app/util/ui_extensions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:stacked/stacked.dart';
 
 import 'home_viewmodel.dart';
@@ -53,85 +55,40 @@ class _HomeViewState extends State<HomeView> {
       viewModelBuilder: () => HomeViewModel(),
       builder: (context, viewModel, child) {
         return Scaffold(
-          appBar: AppBar(
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 32),
-                onPressed: () => viewModel.moveBackward(),
-              ),
-              horizontalSpace(16),
-              IconButton(
-                icon: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 32),
-                onPressed: () => viewModel.moveForward(),
-              ),
-              IconButton(
-                icon: const Icon(Icons.undo, color: Colors.white, size: 32),
-                onPressed: () => viewModel.undo(),
-              ),
-            ],
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(32),
-              child: Column(
+          bottomNavigationBar: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              PaddedRow(
+                padding: kMainPadding,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SizedBox(
-                    width: screenWidth(context),
-                    child: ScrollableRow(
-                      controller: _scrollController,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        ...(viewModel.currentGame?.movePairs ?? [])
-                            .mapIndexed(
-                              (i, e) => CustomCard(
-                                borderRadius: k4pxBorderRadius,
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                                color: kPrimaryColor,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: k575553,
-                                      ),
-                                      padding: const EdgeInsets.all(6),
-                                      child: CustomText.w600(
-                                        (i + 1).toString(),
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    horizontalSpace(4),
-                                    ...e.map(
-                                      (e) => RippleCard(
-                                        onTap: () => viewModel.setCurrentMove(e),
-                                        borderRadius: k4pxBorderRadius,
-                                        padding:
-                                            const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                                        color: Colors.transparent,
-                                        child: CustomText.w500(
-                                          e.san ?? '',
-                                          fontSize: 14,
-                                          color: e.piece.color == PieceColor.black
-                                              ? k817F7B
-                                              : Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                            .insertBetweenElements(horizontalSpace(8)),
-                      ],
-                    ),
+                  GameActionButton(
+                    iconData: Icons.copy_rounded,
+                    text: 'Copy PGN',
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: viewModel.currentGame?.pgn ?? ''));
+                    },
                   ),
-                  EvalBar(eval: viewModel.eval)
+                  GameActionButton(
+                    iconData: Icons.undo_rounded,
+                    text: 'Undo',
+                    onPressed: viewModel.undo,
+                  ),
+                  GameActionButton(
+                    iconData: Icons.restart_alt_rounded,
+                    text: 'New game',
+                    onPressed: viewModel.newGame,
+                  ),
                 ],
               ),
-            ),
+              verticalSpace(32),
+            ],
           ),
+          appBar: AppBar(),
           body: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              EvalBar(eval: viewModel.eval),
               ChessBoard(
                 position: viewModel.previewPosition ?? viewModel.position,
                 selectedPiece: viewModel.highlightedPiece,
@@ -141,6 +98,55 @@ class _HomeViewState extends State<HomeView> {
                 },
                 size: screenWidth(context),
                 highlightedSquares: viewModel.validMovesForSelectedPiece,
+              ),
+              SizedBox(
+                width: screenWidth(context),
+                child: ScrollableRow(
+                  controller: _scrollController,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    ...(viewModel.currentGame?.movePairs ?? [])
+                        .mapIndexed(
+                          (i, e) => CustomCard(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                            color: kPrimaryColor,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: k575553,
+                                  ),
+                                  padding: const EdgeInsets.all(6),
+                                  child: CustomText.w600(
+                                    (i + 1).toString(),
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                horizontalSpace(4),
+                                ...e.map(
+                                  (e) => RippleCard(
+                                    onTap: () => viewModel.setCurrentMove(e),
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                    color: Colors.transparent,
+                                    child: CustomText.w500(
+                                      e.san ?? '',
+                                      fontSize: 14,
+                                      color: e.piece.color == PieceColor.black
+                                          ? k817F7B
+                                          : Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                        .insertBetweenElements(horizontalSpace(4)),
+                  ],
+                ),
               ),
               verticalSpace(10),
             ],

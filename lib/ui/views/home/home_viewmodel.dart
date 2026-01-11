@@ -109,6 +109,13 @@ class HomeViewModel extends IndexTrackingViewModel {
   void undo() {
     _gameService.undoLastMove();
     previewPosition = currentGame?.currentPosition;
+
+    notifyListeners();
+  }
+
+  void newGame() {
+    _gameService.startGame();
+    previewPosition = currentGame?.currentPosition;
     notifyListeners();
   }
 
