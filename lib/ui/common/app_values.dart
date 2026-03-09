@@ -67,3 +67,6 @@ const String testPGN = r'''[Event "Live Chess"]
 const String enPassantPGN = '1. d4 Nf6 2. d5 e5 3. dxe6';
 const String bishopAmbigPGN =
     '1. d4 e5 {Opening: A40: Englund Gambit Complex} 2. dxe5 f6 3. exf6 gxf6 4. Nf3 Ne7 5. Nc3 Nd5 6. Nxd5 c6 7. Nxf6+ Kf7 8. Bh6 Bxh6 9. Ne5+ Kxf6 10. Qxd7 Bxd7 11. Nxd7+ Nxd7 12. Rd1 Ne5 13. e4 Qxd1+ 14. Kxd1 Ng4 15. Be2 Nxf2+ 16. Ke1 Nxh1 17. e5+ Kf7 18. e6+ Kf8 19. e7+ Kf7 20. e8B+ Kg7 21. Kf1 Rf8+ 22. Kg1 Rf1+ 23. Kxf1 Rd8 24. Ba6 Rd7 25. Kg1 Rd6 26. Kxh1 Bg5 27. Kg1 Rd2 28. Kf1 Rxg2 29. Ke1 Rxh2 30. Kd1 Rxc2 31. Ke1 Rxb2 32. Kd1 Rxa2 33. Ke1 Re2+ 34. Kxe2 Be3 35. Kxe3 Kf8 36. Bxb7 Kg8 37. Bexc6 a6 38. Bxa6 Kf8 39. Be4 Ke8 40. Bxh7 Kd8 41. Bad3';
+
+const String problematicPGN =
+    '1. Nc3 g6 2. Ne4 Bg7 3. Nh3 Nf6 4. Nxf6+ Bxf6 5. Nf4 O-O 6. Nd5 Bg7 7. Nb4 d5 8. Rb1 Bf5 9. Ra1 e6 10. Nd3 Nc6 11. Nc5 b6 12. Nd3 a5 13. e3 Nb4 14. Nxb4 axb4 15. Bb5 Ra5 16. Bd3 Qd6 17. Bxf5 exf5 18. Qf3 Rfa8 19. O-O Rxa2 20. Rxa2 Rxa2 21. Kh1 Bxb2 22. Bxb2 Rxb2 23. Rc1 Qc6 24. Qd1 Qc5 25. Kg1 d4 26. exd4 Qxd4 27. Qe1 b3 28. Qe8+ Kg7 29. cxb3 Qxd2 30. Qe5+ Kf8 31. Qh8+ Ke7 32. Rxc7+ Ke6 33. Qe8+ Kf6 34. Rxf7+ Kg5 35. Qe7+ Kg4 36. f3+ Kf4 37. Qc7+ Ke3 38. Qxb6+ Ke2 39. Qf2+ Kd1 40. Qf1+ Kc2 41. Rxh7 Rb1 42. Rc7+ Kb2 43. Qxb1+ Kxb1 44. Kf1 Kb2 45. Rc6 Kxb3 46. Rxg6';
