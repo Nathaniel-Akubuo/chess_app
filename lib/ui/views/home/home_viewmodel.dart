@@ -1,7 +1,11 @@
+import 'dart:math';
+
 import 'package:chess_app/app/app.locator.dart';
 import 'package:chess_app/models/models.dart';
 import 'package:chess_app/repo/engine/optimized_engine.dart';
 import 'package:chess_app/services/game_service.dart';
+import 'package:chess_app/ui/common/app_values.dart';
+import 'package:chess_app/util/debouncer.dart';
 
 import 'package:chess_app/util/global_functions.dart';
 import 'package:chess_app/util/move_validator_extension.dart';
@@ -12,10 +16,18 @@ import 'package:stacked/stacked.dart';
 class HomeViewModel extends IndexTrackingViewModel {
   final _gameService = locator<GameService>();
 
+  final _undoDebouncer = Debouncer(delay: oneSecond);
+
   PieceColor userSide = PieceColor.white;
 
   HomeViewModel() {
     _gameService.startGame();
+
+    userSide = PieceColor.values[Random().nextInt(PieceColor.values.length)];
+
+    if (userSide != position?.sideToMove) {
+      _respond();
+    }
   }
 
   Square? selectedSquare;
@@ -37,7 +49,10 @@ class HomeViewModel extends IndexTrackingViewModel {
   }
 
   bool selectSquare(Square square, PieceType? promotion) {
+    var piece = position?.pieceAt(square);
     if (previewPosition != null && previewPosition?.id != position?.id) return false;
+    if (piece != null && piece.color != userSide && selectedSquare == null) return false;
+
     var isHighlighted = highlightedPiece != null;
 
     if (isHighlighted) {
@@ -74,9 +89,9 @@ class HomeViewModel extends IndexTrackingViewModel {
   }
 
   Future<void> _respond() async {
+    if (position?.sideToMove == userSide) return;
     if (position?.isCheckMateForSideToMove == true) {
-      logfn(currentGame?.pgn);
-      logfn('Checkmate');
+      logfn(currentGame?.pgn, 'checkmate');
       return;
     }
 
@@ -87,11 +102,11 @@ class HomeViewModel extends IndexTrackingViewModel {
     logfn(end.difference(start).inMilliseconds);
 
     if (response != null) {
-      _updatePositon(response.piece, response.destination, response.promoteTo);
-      if (position?.isCheckMateForSideToMove == true) {
-        logfn(currentGame?.pgn);
-
-        logfn("I've been mated");
+      if (position?.sideToMove != userSide) {
+        _updatePositon(response.piece, response.destination, response.promoteTo);
+        if (position?.isCheckMateForSideToMove == true) {
+          logfn(currentGame?.pgn, "I've been mated");
+        }
       }
     } else {
       logfn('no best move');
@@ -113,7 +128,7 @@ class HomeViewModel extends IndexTrackingViewModel {
     previewPosition = currentGame?.currentPosition;
 
     if (currentGame?.currentPosition.sideToMove != userSide) {
-      _respond();
+      _undoDebouncer.debounce(() => _respond());
     }
 
     notifyListeners();
