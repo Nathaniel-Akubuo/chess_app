@@ -83,9 +83,9 @@ class _TipOverState extends State<TipOver> with SingleTickerProviderStateMixin {
           builder: (_, child) {
             return Transform(
               transform: Matrix4.identity()
-                ..translate(0.0, height)
+                ..translateByDouble(0.0, height, 0, 1)
                 ..rotateZ(_rotation.value)
-                ..translate(0.0, -height),
+                ..translateByDouble(0.0, -height, 0, 1),
               alignment: Alignment.topCenter,
               child: child,
             );
