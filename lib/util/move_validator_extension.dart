@@ -1,4 +1,5 @@
 import 'package:chess_app/models/models.dart';
+import 'package:chess_app/util/global_functions.dart';
 import 'package:chess_app/util/ui_extensions.dart';
 
 extension MoveValidatorExtension on Position {
@@ -201,11 +202,19 @@ extension MoveValidatorExtension on Position {
       var destination = move.destination;
       var captureSquare = Square.fromFileRank(destination.file, destination.rank + dir);
 
-      final index = nextPieces.indexWhere((e) => e.initialSquare == piece.initialSquare);
       final movingPiece = move.piece.copyWith(type: move.promoteTo, square: move.destination);
 
       nextPieces.removeWhere((e) => e.square == captureSquare);
-      nextPieces[index] = movingPiece;
+      final index = nextPieces.indexWhere((e) => e.initialSquare == piece.initialSquare);
+      if (index == -1) {
+        // fallback: replace by matching current square if initial lookup failed
+        final fallbackIndex = nextPieces.indexWhere((e) => e.square == move.from);
+        if (fallbackIndex != -1) {
+          nextPieces[fallbackIndex] = movingPiece;
+        }
+      } else {
+        nextPieces[index] = movingPiece;
+      }
 
       return Position(
         pieces: nextPieces,
@@ -454,8 +463,16 @@ extension MoveValidatorExtension on Position {
     if (!_validatePieceMove(piece, move, target)) {
       return false;
     }
+    Position? simulated;
 
-    final simulated = update(move);
+    try {
+      simulated = update(move);
+    } catch (e) {
+      logfn(move.buildSAN(this), 'problem: $e ${move.piece.color}');
+    }
+
+    if (simulated == null) return false;
+
     if (simulated.isInCheck(piece.color)) {
       return false;
     }
