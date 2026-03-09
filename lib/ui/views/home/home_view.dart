@@ -88,8 +88,9 @@ class _HomeViewState extends State<HomeView> {
           body: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              EvalBar(eval: viewModel.eval),
+              // EvalBar(eval: viewModel.eval),
               ChessBoard(
+                userSide: viewModel.userSide,
                 position: viewModel.previewPosition ?? viewModel.position,
                 selectedPiece: viewModel.highlightedPiece,
                 onTapSquare: (square, promotion) async {
@@ -101,6 +102,7 @@ class _HomeViewState extends State<HomeView> {
               ),
               SizedBox(
                 width: screenWidth(context),
+                height: 40,
                 child: ScrollableRow(
                   controller: _scrollController,
                   mainAxisAlignment: MainAxisAlignment.start,

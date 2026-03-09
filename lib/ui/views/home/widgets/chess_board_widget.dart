@@ -20,6 +20,8 @@ class ChessBoard extends StatefulWidget {
   final Function(Square square, PieceType? promotion) onTapSquare;
   final List<Square> highlightedSquares;
 
+  final PieceColor userSide;
+
   const ChessBoard({
     super.key,
     required this.position,
@@ -27,6 +29,7 @@ class ChessBoard extends StatefulWidget {
     this.selectedPiece,
     required this.onTapSquare,
     this.highlightedSquares = const [],
+    required this.userSide,
   });
 
   @override
@@ -35,6 +38,8 @@ class ChessBoard extends StatefulWidget {
 
 class _ChessBoardState extends State<ChessBoard> {
   final GlobalKey _boardKey = GlobalKey();
+
+  bool get _isFlipped => widget.userSide == PieceColor.black;
 
   @override
   void didUpdateWidget(covariant ChessBoard oldWidget) {
@@ -147,6 +152,7 @@ class _ChessBoardState extends State<ChessBoard> {
       child: Stack(
         children: [
           _BoardGrid(
+            flipped: _isFlipped,
             squareSize: squareSize,
             isHighlighted: (square) => widget.highlightedSquares.contains(square),
             onTapSquare: (square, rect) async {
@@ -212,8 +218,11 @@ class _ChessBoardState extends State<ChessBoard> {
     final file = square.file;
     final rank = square.rank;
 
-    final x = file * squareSize;
-    final y = (7 - rank) * squareSize;
+    int displayFile = _isFlipped ? 7 - file : file;
+    int displayRank = _isFlipped ? rank : 7 - rank;
+
+    final x = displayFile * squareSize;
+    final y = displayRank * squareSize;
 
     return Offset(x.toDouble(), y.toDouble());
   }
@@ -223,24 +232,29 @@ class _BoardGrid extends StatelessWidget {
   final double squareSize;
   final void Function(Square square, Rect globalRect) onTapSquare;
   final bool Function(Square square) isHighlighted;
+  final bool flipped;
 
   const _BoardGrid({
     required this.squareSize,
     required this.onTapSquare,
     required this.isHighlighted,
+    required this.flipped,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: List.generate(8, (row) {
-        var rank = 7 - row;
+        final rank = 7 - row;
+        final realRank = flipped ? row : 7 - row;
 
         return Row(
           children: List.generate(8, (file) {
-            var square = Square.fromFileRank(file, rank);
-            var isDark = (rank + file) % 2 == 0;
-            var highlighted = isHighlighted(square);
+            final realFile = flipped ? 7 - file : file;
+
+            final square = Square.fromFileRank(realFile, realRank);
+            final isDark = (rank + file) % 2 == 0;
+            final highlighted = isHighlighted(square);
 
             var squareColorValue = isDark ? k5C8F40 : kE0E5C4;
             var textColor = !isDark ? k5C8F40 : kE0E5C4;
@@ -279,7 +293,7 @@ class _BoardGrid extends StatelessWidget {
                             top: 4,
                             left: 4,
                             child: CustomText.w600(
-                              (rank + 1).toString(),
+                              (realRank + 1).toString(),
                               fontSize: 12,
                               color: textColor,
                             ),
@@ -323,7 +337,7 @@ class _ChessPiece extends StatelessWidget {
     return GestureDetector(
       child: Center(
         child: Padding(
-          padding: const EdgeInsetsGeometry.all(4),
+          padding: const EdgeInsets.all(2),
           child: TipOver(
             angle: 45,
             duration: fiveHundredMS,
