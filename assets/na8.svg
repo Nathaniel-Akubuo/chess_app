@@ -1,0 +1,55 @@
+<svg
+  width="512"
+  height="512"
+  viewBox="0 0 512 512"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#0B0B0F"/>
+
+  <!-- N with knight head -->
+  <path
+    d="
+      M140 360
+      V150
+      H180
+      L260 280
+      V150
+      H300
+      V360
+      H260
+      L180 230
+      V360
+      Z
+    "
+    fill="#FFFFFF"
+  />
+
+  <!-- Knight head cutout -->
+  <path
+    d="
+      M205 210
+      c20 -30 60 -35 75 -15
+      c10 15 0 35 -20 45
+      l10 25
+      h-35
+      l-5 -20
+      c-20 -5 -35 -15 -25 -35
+      z
+    "
+    fill="#0B0B0F"
+  />
+
+  <!-- a8 text -->
+  <text
+    x="320"
+    y="300"
+    font-size="96"
+    font-family="Inter, Space Grotesk, Arial, sans-serif"
+    font-weight="600"
+    fill="#FFFFFF"
+    letter-spacing="-4"
+  >
+    a8
+  </text>
+</svg>
